@@ -17,7 +17,8 @@ class MandelbrotGenerator(FractalGenerator):
         self.colormap = colormap
         self.cmap = plt.get_cmap(colormap)
 
-    def generate(self, xmin, xmax, ymin, ymax):
+    def _compute(self, xmin, xmax, ymin, ymax) -> np.ndarray:
+        # Raw escape-time iteration counts, shape (height, width).
         x = np.linspace(xmin, xmax, self.width)
         y = np.linspace(ymin, ymax, self.height)
         X, Y = np.meshgrid(x, y)
@@ -30,6 +31,12 @@ class MandelbrotGenerator(FractalGenerator):
             Z[mask] = Z[mask] * Z[mask] + C[mask]
             img += mask
 
+        return img
+
+    def generate(self, xmin, xmax, ymin, ymax) -> np.ndarray:
+        # RGB uint8 for display - article Section 4.1
+        img = self._compute(xmin, xmax, ymin, ymax)
+
         # Normalize to 0-1 for colormap
         img_normalized = img / self.max_iter
 
@@ -41,6 +48,11 @@ class MandelbrotGenerator(FractalGenerator):
 
         return img_rgb
 
+    def generate_raw(self, xmin, xmax, ymin, ymax) -> np.ndarray:
+        # Grayscale uint8 for analysis - avoids colormap distortion.
+        img = self._compute(xmin, xmax, ymin, ymax)
+        return (img / self.max_iter * 255).astype(np.uint8)
+
 
 class JuliaGenerator(FractalGenerator):
     def __init__(self, width=800, height=600, max_iter=256, colormap="twilight"):
@@ -50,7 +62,8 @@ class JuliaGenerator(FractalGenerator):
         self.colormap = colormap
         self.cmap = plt.get_cmap(colormap)
 
-    def generate(self, c, xmin, xmax, ymin, ymax):
+    def _compute(self, c, xmin, xmax, ymin, ymax) -> np.ndarray:
+        # Raw escape-time iteration counts, shape (height, width).
         x = np.linspace(xmin, xmax, self.width)
         y = np.linspace(ymin, ymax, self.height)
         X, Y = np.meshgrid(x, y)
@@ -62,6 +75,12 @@ class JuliaGenerator(FractalGenerator):
             Z[mask] = Z[mask] * Z[mask] + c
             img += mask
 
+        return img
+
+    def generate(self, c, xmin, xmax, ymin, ymax) -> np.ndarray:
+        # RGB uint8 for display - article Section 4.1
+        img = self._compute(c, xmin, xmax, ymin, ymax)
+
         # Normalize to 0-1 for colormap
         img_normalized = img / self.max_iter
 
@@ -72,3 +91,8 @@ class JuliaGenerator(FractalGenerator):
         img_rgb = (img_colored[:, :, :3] * 255).astype(np.uint8)
 
         return img_rgb
+
+    def generate_raw(self, c, xmin, xmax, ymin, ymax) -> np.ndarray:
+        # Grayscale uint8 for analysis - avoids colormap distortion.
+        img = self._compute(c, xmin, xmax, ymin, ymax)
+        return (img / self.max_iter * 255).astype(np.uint8)

@@ -7,43 +7,10 @@ from typing import List
 
 import numpy as np
 
-_tf_available = False
-_tf = None
-
-try:
-    import tensorflow as tf
-
-    _tf_available = True
-    _tf = tf
-except ImportError:
-    pass
-
-
-def box_count_gpu(img: np.ndarray, box_size: int) -> int:
-    if not _tf_available:
-        return box_count_cpu(img, box_size)
-
-    h, w = img.shape
-    img_tensor = _tf.constant(img, dtype=_tf.float32)
-
-    count = 0
-    rows = range(0, h, box_size)
-    cols = range(0, w, box_size)
-
-    for i in rows:
-        row_boxes = []
-        for j in cols:
-            box_sum = _tf.reduce_sum(
-                img_tensor[i : min(i + box_size, h), j : min(j + box_size, w)]
-            )
-            row_boxes.append(box_sum > 0)
-        count += int(_tf.reduce_sum(_tf.cast(row_boxes, _tf.int32)).numpy())
-
-    return count
-
 
 def box_count_cpu(img: np.ndarray, box_size: int) -> int:
     """CPU fallback for box counting."""
+
     count = 0
     for i in range(0, img.shape[0], box_size):
         for j in range(0, img.shape[1], box_size):
@@ -65,13 +32,7 @@ def box_count(img: np.ndarray, box_size: int) -> int:
     Returns:
         Number of non-empty boxes
     """
-    try:
-        from ai_fractals.hardware_config import check_gpu_available
 
-        if check_gpu_available() and _tf_available:
-            return box_count_gpu(img, box_size)
-    except Exception:
-        pass
     return box_count_cpu(img, box_size)
 
 
@@ -92,6 +53,7 @@ def fractal_dimension(img: np.ndarray, box_sizes: List[int] = None) -> float:
     Returns:
         Fractal dimension (float)
     """
+
     if box_sizes is None:
         box_sizes = [2, 4, 8, 16, 32, 64]
 
@@ -133,15 +95,7 @@ def is_valid_fractal_dimension(dimension: float) -> bool:
 
 
 def fractal_dimension_score(dimension: float) -> float:
-    """
-    Convert fractal dimension to normalized score [0, 1].
-
-    Args:
-        dimension: Fractal dimension
-
-    Returns:
-        Score between 0 and 1 (1 = optimal)
-    """
+    """Convert fractal dimension to normalized score [0, 1]."""
     if not is_valid_fractal_dimension(dimension):
         return 0.0
 

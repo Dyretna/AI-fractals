@@ -51,16 +51,8 @@ def is_sufficient_entropy(entropy: float, threshold: float = 3.0) -> bool:
 
 
 def entropy_score(entropy: float, max_entropy: float = 5.0) -> float:
-    """
-    Convert entropy to normalized score [0, 1].
+    """Convert entropy to normalized score [0, 1]."""
 
-    Args:
-        entropy: Entropy value
-        max_entropy: Maximum expected entropy for normalization
-
-    Returns:
-        Score between 0 and 1
-    """
     normalized = min(entropy / max_entropy, 1.0)
     return normalized
 

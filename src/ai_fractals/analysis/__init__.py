@@ -10,6 +10,7 @@ from .complexity_measures import (
     entropy_score,
     is_sufficient_entropy,
 )
+from .evaluator import FractalQualityEvaluator
 from .fractal_dimension import (
     box_count,
     fractal_dimension,
@@ -29,20 +30,21 @@ from .statistical_properties import (
 )
 
 __all__ = [
-    "box_count",
-    "fractal_dimension",
-    "is_valid_fractal_dimension",
-    "fractal_dimension_score",
-    "analyze_statistical_properties",
-    "is_sufficient_variance",
-    "variance_score",
+    "analyze_scale_invariance",
     "analyze_spatial_correlation",
+    "analyze_statistical_properties",
+    "box_count",
     "calculate_entropy",
-    "is_sufficient_entropy",
-    "entropy_score",
     "calculate_lacunarity",
     "calculate_kolmogorov_complexity_estimate",
     "check_multiscale_consistency",
-    "analyze_scale_invariance",
+    "entropy_score",
+    "fractal_dimension",
+    "fractal_dimension_score",
+    "FractalQualityEvaluator",
+    "is_valid_fractal_dimension",
+    "is_sufficient_entropy",
+    "is_sufficient_variance",
+    "variance_score",
     "visualize_multiscale",
 ]
