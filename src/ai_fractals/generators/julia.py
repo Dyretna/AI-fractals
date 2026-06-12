@@ -29,7 +29,10 @@ class JuliaCPU(BaseFractalGenerator):
         return img
 
     def generate(self, c, xmin, xmax, ymin, ymax):
-        return self.normalize_RGB(self._compute(c, xmin, xmax, ymin, ymax))
+        img = self.normalize_RGB(self._compute(c, xmin, xmax, ymin, ymax))
+        if self.use_supersampling:
+            img = self.supersample(img)
+        return img
 
     def generate_raw(self, c, xmin, xmax, ymin, ymax):
         img = self._compute(c, xmin, xmax, ymin, ymax)
@@ -38,25 +41,24 @@ class JuliaCPU(BaseFractalGenerator):
 
 class JuliaGPU(BaseFractalGenerator):
     def _compute(self, c, xmin, xmax, ymin, ymax):
-        device = self.device
-
         xmin, xmax, ymin, ymax = self.match_aspect(xmin, xmax, ymin, ymax)
 
         # double precision coordinates
-        x = torch.linspace(xmin, xmax, self.width, device=device, dtype=torch.float64)
-        y = torch.linspace(ymin, ymax, self.height, device=device, dtype=torch.float64)
+        x = torch.linspace(
+            xmin, xmax, self.width, device=self.device, dtype=torch.float64
+        )
+        y = torch.linspace(
+            ymin, ymax, self.height, device=self.device, dtype=torch.float64
+        )
         X, Y = torch.meshgrid(x, y, indexing="xy")
 
         # complex128 grid
         Z = (X + 1j * Y).to(torch.complex128)
 
         # complex128 constant
-        c = torch.tensor(c, device=device, dtype=torch.complex128)
+        c = torch.tensor(c, device=self.device, dtype=torch.complex128)
 
-        img = torch.zeros(Z.shape, dtype=torch.int32, device=device)
-
-        self.log.info(f"using device: {device}")
-        self.log.info(f"Z dtype: ({Z.dtype}), device: {Z.device}")
+        img = torch.zeros(Z.shape, dtype=torch.int32, device=self.device)
 
         for i in range(1, self.max_iter):
             mask = img == 0
@@ -68,7 +70,10 @@ class JuliaGPU(BaseFractalGenerator):
         return img.cpu().numpy()
 
     def generate(self, c, xmin, xmax, ymin, ymax):
-        return self.normalize_RGB(self._compute(c, xmin, xmax, ymin, ymax))
+        img = self.normalize_RGB(self._compute(c, xmin, xmax, ymin, ymax))
+        if self.use_supersampling:
+            img = self.supersample(img)
+        return img
 
     def generate_raw(self, c, xmin, xmax, ymin, ymax):
         img = self._compute(c, xmin, xmax, ymin, ymax)

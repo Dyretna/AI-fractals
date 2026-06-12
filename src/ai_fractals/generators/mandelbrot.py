@@ -7,7 +7,6 @@ from .base import BaseFractalGenerator
 
 class MandelbrotCPU(BaseFractalGenerator):
     def _compute(self, xmin, xmax, ymin, ymax):
-        device = self.device
         xmin, xmax, ymin, ymax = self.match_aspect(xmin, xmax, ymin, ymax)
 
         x = np.linspace(xmin, xmax, self.width)
@@ -16,9 +15,6 @@ class MandelbrotCPU(BaseFractalGenerator):
         C = X + 1j * Y
         Z = np.zeros_like(C)
         img = np.zeros(C.shape, dtype=np.int32)
-
-        self.log.info(f"using device: {device}")
-        self.log.info(f"Z dtype: ({Z.dtype}), device: {Z.device}")
 
         for i in range(1, self.max_iter):
             mask = img == 0
@@ -30,7 +26,10 @@ class MandelbrotCPU(BaseFractalGenerator):
         return img
 
     def generate(self, xmin, xmax, ymin, ymax):
-        return self.normalize_RGB(self._compute(xmin, xmax, ymin, ymax))
+        img = self.normalize_RGB(self._compute(xmin, xmax, ymin, ymax))
+        if self.use_supersampling:
+            img = self.supersample(img)
+        return img
 
     def generate_raw(self, xmin, xmax, ymin, ymax):
         img = self._compute(xmin, xmax, ymin, ymax)
@@ -39,22 +38,22 @@ class MandelbrotCPU(BaseFractalGenerator):
 
 class MandelbrotGPU(BaseFractalGenerator):
     def _compute(self, xmin, xmax, ymin, ymax):
-        device = self.device
         xmin, xmax, ymin, ymax = self.match_aspect(xmin, xmax, ymin, ymax)
 
         # double precision coordinates
-        x = torch.linspace(xmin, xmax, self.width, device=device, dtype=torch.float64)
-        y = torch.linspace(ymin, ymax, self.height, device=device, dtype=torch.float64)
+        x = torch.linspace(
+            xmin, xmax, self.width, device=self.device, dtype=torch.float64
+        )
+        y = torch.linspace(
+            ymin, ymax, self.height, device=self.device, dtype=torch.float64
+        )
         X, Y = torch.meshgrid(x, y, indexing="xy")
 
         # complex constant
         C = X + 1j * Y
         Z = torch.zeros_like(C, dtype=torch.complex128)
 
-        img = torch.zeros(C.shape, dtype=torch.int32, device=device)
-
-        self.log.info(f"using device: {device}")
-        self.log.info(f"Z dtype: ({Z.dtype}), device: {Z.device}")
+        img = torch.zeros(C.shape, dtype=torch.int32, device=self.device)
 
         for i in range(1, self.max_iter):
             mask = img == 0
@@ -66,7 +65,10 @@ class MandelbrotGPU(BaseFractalGenerator):
         return img.cpu().numpy()
 
     def generate(self, xmin, xmax, ymin, ymax):
-        return self.normalize_RGB(self._compute(xmin, xmax, ymin, ymax))
+        img = self.normalize_RGB(self._compute(xmin, xmax, ymin, ymax))
+        if self.use_supersampling:
+            img = self.supersample(img)
+        return img
 
     def generate_raw(self, xmin, xmax, ymin, ymax):
         img = self._compute(xmin, xmax, ymin, ymax)

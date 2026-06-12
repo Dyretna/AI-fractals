@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import random
 from datetime import datetime
@@ -32,7 +33,7 @@ class FractalDatasetBuilder:
         quality_threshold: float = 0.3,
         n_tiles: int = 5,
         colormap: str = "twilight",
-        log_level: int = 0,
+        log_level: int = logging.WARNING,
         output_dir: Path = None,
     ):
         # set paths
@@ -62,6 +63,7 @@ class FractalDatasetBuilder:
             max_iter=max_iter,
             colormap=colormap,
             log_level=log_level,
+            use_supersampling=False,
         )
         self.hires_gen: BaseFractalGenerator = create_generator(
             fractal_type=self.fractal_type,
@@ -70,6 +72,7 @@ class FractalDatasetBuilder:
             max_iter=max_iter,
             colormap=self.colormap,
             log_level=log_level,
+            use_supersampling=True,
         )
 
         self.evaluator = FractalQualityEvaluator(quality_threshold)

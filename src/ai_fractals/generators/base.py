@@ -1,7 +1,9 @@
 # ai_fractals/generators/base.py
 
+import logging
 from abc import ABC, abstractmethod
 
+import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -13,13 +15,20 @@ class BaseFractalGenerator(ABC):
     """Abstract base class for fractal generators."""
 
     def __init__(
-        self, width=1200, height=1200, max_iter=512, colormap="twilight", log_level=0
+        self,
+        width=1200,
+        height=1200,
+        max_iter=512,
+        colormap="twilight",
+        use_supersampling=True,
+        log_level=logging.WARNING,
     ):
         self.width = width
         self.height = height
         self.max_iter = max_iter
         self.colormap = colormap
         self.cmap = plt.get_cmap(colormap)
+        self.use_supersampling = use_supersampling
         self.log_level = log_level
 
         # pytorch device, GPU if available
@@ -27,7 +36,10 @@ class BaseFractalGenerator(ABC):
             torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
         )
 
-        self.log = get_logger(self.__class__.__module__, level=log_level)
+        self.log = get_logger(
+            f"{self.__class__.__module__}.{id(self)}", level=log_level
+        )
+        self.log.info(f"using device: {self.device}")
 
     @abstractmethod
     def _compute(self, *args, **kwargs):
@@ -87,3 +99,14 @@ class BaseFractalGenerator(ABC):
 
         colored = self.cmap(x)
         return (colored[:, :, :3] * 255).astype(np.uint8)
+
+    def supersample(self, img):
+        up = cv2.resize(
+            img, (self.width * 2, self.height * 2), interpolation=cv2.INTER_LINEAR
+        )
+
+        down = cv2.resize(up, (self.width, self.height), interpolation=cv2.INTER_AREA)
+
+        smooth = cv2.GaussianBlur(down, (3, 3), sigmaX=0.4)
+
+        return smooth

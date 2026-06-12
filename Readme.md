@@ -15,10 +15,10 @@ The project is inspired by research from **Douglas C. Youvan** (doug@youvan.com)
 Completed:
 - **Automatic Fractal Generation**: Generate Mandelbrot and Julia set fractals with configurable parameters
 - **Shoreline Extraction**: Extract and analyze fractal shoreline patterns from generated fractals
+- **CUDA acceleration**: CPU-based fractal generation is slow for large datasets. Future versions will use PyTorch tensors on CUDA to parallelize escape-time iteration and dramatically speed up fractal generation. Also see https://github.com/TomLemsky/pytorch-fractals?tab=readme-ov-file
+- **Supersampling techniques**: upsampling -> downsampling -> gaussian blur, for smoother fractals
 
 In Progress:
-- **CUDA acceleration**: CPU-based fractal generation is slow for large datasets. Future versions will use PyTorch tensors on CUDA to parallelize escape-time iteration and dramatically speed up fractal generation. see https://github.com/TomLemsky/pytorch-fractals?tab=readme-ov-file
-
 - **AI Training**: Train neural networks (CNNs, GANs) on fractal datasets to generate pseudo-fractals
 
 ## Installation
