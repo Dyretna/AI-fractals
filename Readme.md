@@ -2,6 +2,8 @@
 
 AI-Enhanced Fractal Geometry: Merging Machine Learning with Traditional Fractal Mathematics
 
+![image](twilight_example.png)
+
 ## Overview
 
 This project explores the intersection of artificial intelligence and fractal geometry, combining machine learning techniques with traditional fractal mathematics to generate and analyze fractal patterns. The work is inspired by research from **Douglas C. Youvan** (doug@youvan.com), detailed in the paper [AI-Enhanced Fractal Geometry: Merging Machine Learning with Traditional Fractal Mathematics](docs/AI-EnhancedFractalGeometry-MergingMachineLearningwithTraditionalFractalMathematics.pdf).

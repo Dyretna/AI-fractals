@@ -14,20 +14,15 @@ Modules:
 
 __version__ = "0.1.0"
 
-from .generators import FractalGenerator, JuliaGenerator, MandelbrotGenerator
-from .io import FractalSaverPipeline, ImageSaver, OpenCVImageSaver, PltImageSaver
-from .processing import ShorelineProcessor
+from .data import FractalDatasetBuilder, ShorelineBatchExtractor
+from .generators import BaseFractalGenerator, JuliaGenerator, MandelbrotGenerator
 
 __all__ = [
     # Generators
-    "FractalGenerator",
+    "BaseFractalGenerator",
     "MandelbrotGenerator",
     "JuliaGenerator",
-    # I/O
-    "FractalSaverPipeline",
-    "ImageSaver",
-    "PltImageSaver",
-    "OpenCVImageSaver",
-    # Processing
-    "ShorelineProcessor",
+    # Data
+    "FractalDatasetBuilder",
+    "ShorelineBatchExtractor",
 ]
