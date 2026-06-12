@@ -1,22 +1,18 @@
 import json
-import logging
 import os
 import random
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 import cv2
 import numpy as np
+import torch
 from dotenv import load_dotenv
 from tqdm import tqdm
 
 from ai_fractals.analysis import FractalQualityEvaluator
-from ai_fractals.generators import (
-    BaseFractalGenerator,
-    JuliaGenerator,
-    MandelbrotGenerator,
-)
+from ai_fractals.generators import BaseFractalGenerator, create_generator
+from ai_fractals.logging_config import get_logger
 
 
 class FractalDatasetBuilder:
@@ -36,6 +32,7 @@ class FractalDatasetBuilder:
         quality_threshold: float = 0.3,
         n_tiles: int = 5,
         colormap: str = "twilight",
+        log_level: int = 0,
         output_dir: Path = None,
     ):
         # set paths
@@ -58,41 +55,44 @@ class FractalDatasetBuilder:
         self.colormap = colormap
 
         # Generators and evaluator
-        self.tile_gen: BaseFractalGenerator = self._create_generator(
+        self.tile_gen: BaseFractalGenerator = create_generator(
             fractal_type=self.fractal_type,
             width=tile_resolution,
             height=tile_resolution,
             max_iter=max_iter,
             colormap=colormap,
+            log_level=log_level,
         )
-        self.hires_gen: BaseFractalGenerator = self._create_generator(
+        self.hires_gen: BaseFractalGenerator = create_generator(
             fractal_type=self.fractal_type,
             width=width,
             height=height,
             max_iter=max_iter,
             colormap=self.colormap,
+            log_level=log_level,
         )
 
-        self.evaluator = FractalQualityEvaluator(quality_threshold=quality_threshold)
+        self.evaluator = FractalQualityEvaluator(quality_threshold)
 
         # Bounds
         self.bounds = (-2.0, 1.0, -1.5, 1.5)
         self.depth = 0
 
         # stuck detection
-        self.consectuive_fallbacks = 0
+        self.consecutive_fallbacks = 0
         self.max_fallbacks = 10
 
+        # pytorch device and CUDA
+        self.has_cuda = torch.cuda.is_available()
+        self.device = torch.device("cuda") if self.has_cuda else torch.device("cpu")
+
         # logging
-        self.log = logging.getLogger(__name__)
-        self.log.setLevel(logging.INFO)
+        self.log = get_logger(__name__, level=log_level)
+        self._init_log()
 
-        self.log.info(f"Output dir: {self.output_dir}")
-        self.log.info(f"Dir exists: {self.output_dir.exists()}")
-
-    # ---------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Public API
-    # ---------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def run(self, n_images):
         """
@@ -110,7 +110,7 @@ class FractalDatasetBuilder:
             if saved > saved_before:
                 pbar.update(1)
 
-            if self.consectuive_fallbacks >= self.max_fallbacks:
+            if self.consecutive_fallbacks >= self.max_fallbacks:
                 self.log.warning("Too many fallbacks - resetting search space")
                 self.reset()
 
@@ -123,12 +123,14 @@ class FractalDatasetBuilder:
         Returns 1 of an image was saved, else 0
         """
         # dynamic threshold
+        # lower thres at starting point, for more variety
         self.evaluator.quality_threshold = 0.12 if self.depth == 0 else 0.3
 
+        # create tiled candidates for further depth search
+        # Random choice, since best metrics is not necessarily most interesting
+        # Fallback if no tile is over threshold: pick 1 random of top 3
         tiles = self._tile_and_score(*self.bounds)
         candidates = [t for t in tiles if t["accept"]]
-
-        # Fallback: pich top 3
         pool = (
             candidates
             if candidates
@@ -137,9 +139,9 @@ class FractalDatasetBuilder:
         chosen = random.choice(pool)
 
         if chosen["accept"]:
-            self.consectuive_fallbacks = 0
+            self.consecutive_fallbacks = 0
         else:
-            self.consectuive_fallbacks += 1
+            self.consecutive_fallbacks += 1
 
         # update bounds
         self.bounds = chosen["bounds"]
@@ -167,7 +169,7 @@ class FractalDatasetBuilder:
     def reset(self):
         self.bounds = self._default_bounds(self.fractal_type)
         self.depth = 0
-        self.consectuive_fallbacks = 0
+        self.consecutive_fallbacks = 0
 
     # ---------------------------------------------------------------------------
     # Saving
@@ -197,9 +199,9 @@ class FractalDatasetBuilder:
         with open(fname.with_suffix(".json"), "w") as f:
             json.dump(meta, f, indent=2)
 
-    # ---------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Tile search
-    # ---------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def _tile_and_score(self, xmin, xmax, ymin, ymax):
         xs = np.linspace(xmin, xmax, self.n_tiles + 1)
@@ -224,24 +226,18 @@ class FractalDatasetBuilder:
 
         return tiles
 
-    # ---------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Helpers
-    # ---------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
-    def _create_generator(
-        self,
-        fractal_type: str,
-        width: int,
-        height: int,
-        max_iter: int,
-        colormap: Optional[str],
-    ) -> BaseFractalGenerator:
-        if fractal_type == "mandelbrot":
-            return MandelbrotGenerator(width, height, max_iter, colormap)
-        elif fractal_type == "julia":
-            return JuliaGenerator(width, height, max_iter, colormap)
-        else:
-            raise ValueError(f"Unknown fractal type: {fractal_type}")
+    def _init_log(self):
+        self.log.info("======== Dataset Builder =========")
+        rows = []
+        rows.append(f"Device: {self.device}")
+        rows.append(f"Colormap: {self.colormap}")
+        rows.append(f"Output dir: {self.output_dir}")
+
+        self.log.info("\n - ".join(rows))
 
     def _default_bounds(self, fractal_type):
         if fractal_type == "mandelbrot":
@@ -253,27 +249,28 @@ class FractalDatasetBuilder:
     def _count_existing_pngs(self):
         return len(list(self.output_dir.glob("*.png")))
 
-    # ---------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # repr and str
-    # ---------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def __repr__(self):
-        return (
-            f"{self.__class__.__name__}("
-            f"fractal_type={self.fractal_type!r}, "
-            f"save_min_depth={self.save_min_depth}, "
-            f"save_max_depth={self.save_max_depth}, "
-            f"max_iter={self.max_iter}, "
-            f"n_tiles={self.n_tiles}, "
-            f"colormap={self.colormap}, "
-            f"output_dir={str(self.output_dir)!r}"
-            ")"
-        )
+        rows = []
+        rows.append(f"{self.__class__.__name__}")
+        rows.append(f"Device: {self.device}")
+        rows.append(f"fractal_type={self.fractal_type}")
+        rows.append(f"save_min_depth={self.save_min_depth}")
+        rows.append(f"save_max_depth={self.save_max_depth}")
+        rows.append(f"max_iter={self.max_iter}")
+        rows.append(f"n_tiles={self.n_tiles}")
+        rows.append(f"colormap={self.colormap}")
+        rows.append(f"output_dir='{self.output_dir}'")
+        return "\n  ".join(rows)
 
     def __str__(self):
         rows = []
         rows.append(f"{self.__class__.__name__}")
-        rows.append(f"fractal_type={self.fractal_type}, ")
-        rows.append(f"depth={self.depth}, bounds={self.bounds}, ")
+        rows.append(f"Device: {self.device}")
+        rows.append(f"fractal_type={self.fractal_type}")
+        rows.append(f"colormap={self.colormap}")
         rows.append(f"output_dir='{self.output_dir}'")
-        return "\n".join(rows)
+        return "\n  ".join(rows)

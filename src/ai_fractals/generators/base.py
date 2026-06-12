@@ -1,0 +1,89 @@
+# ai_fractals/generators/base.py
+
+from abc import ABC, abstractmethod
+
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+
+from ai_fractals.logging_config import get_logger
+
+
+class BaseFractalGenerator(ABC):
+    """Abstract base class for fractal generators."""
+
+    def __init__(
+        self, width=1200, height=1200, max_iter=512, colormap="twilight", log_level=0
+    ):
+        self.width = width
+        self.height = height
+        self.max_iter = max_iter
+        self.colormap = colormap
+        self.cmap = plt.get_cmap(colormap)
+        self.log_level = log_level
+
+        # pytorch device, GPU if available
+        self.device = (
+            torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+        )
+
+        self.log = get_logger(self.__class__.__module__, level=log_level)
+
+    @abstractmethod
+    def _compute(self, *args, **kwargs):
+        """Raw escape-time iteration counts, shape (height, width)."""
+        raise NotImplementedError
+
+    @abstractmethod
+    def generate(self, *args, **kwargs):
+        """RGB uint8 for display - article Section 4.1"""
+        raise NotImplementedError
+
+    @abstractmethod
+    def generate_raw(self, *args, **kwargs):
+        """Grayscale uint8 for analysis - avoids colormap distortion."""
+        raise NotImplementedError
+
+    def match_aspect(self, xmin, xmax, ymin, ymax):
+        target_ratio = self.width / self.height
+        x_range = xmax - xmin
+        y_range = ymax - ymin
+
+        current_ratio = x_range / y_range
+
+        if abs(current_ratio - target_ratio) < 1e-9:
+            return xmin, xmax, ymin, ymax
+
+        if current_ratio > target_ratio:
+            # too wide -> expand y
+            new_y_range = x_range / target_ratio
+            center_y = (ymin + ymax) / 2
+            ymin = center_y - new_y_range / 2
+            ymax = center_y + new_y_range / 2
+        else:
+            # too high -> expand x
+            new_x_range = y_range * target_ratio
+            center_x = (xmin + xmax) / 2
+            xmin = center_x - new_x_range / 2
+            xmax = center_x + new_x_range / 2
+
+        return xmin, xmax, ymin, ymax
+
+    def normalize_RGB(self, img):
+        """normalizes and applies to 0-1 for colormap. converts to uint8 RGB"""
+        x = img.astype(np.float32)
+
+        # local contrast: diff between percentiles
+        p1 = np.percentile(x, 1)
+        p99 = np.percentile(x, 99)
+        spread = max(p99 - p1, 1e-6)
+
+        # adaptive gamma:
+        gamma = np.clip(1.0 + (200.0 / spread), 0.7, 2.5)
+
+        # normalise
+        x = x / self.max_iter
+        x = x ** (1.0 / gamma)
+
+        colored = self.cmap(x)
+        return (colored[:, :, :3] * 255).astype(np.uint8)

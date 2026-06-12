@@ -1,17 +1,18 @@
-# Composite quality scoring for fractal images.
-# Weights based on Youvan (2024):
-#   fractal dimension 35%  (Section 6.1)
-#   Shannon entropy   25%  (Section 6.4)
-#   pixel variance    20%  (Section 6.1)
-#   edge density      20%  (Section 4.2)
-#
-# Pass generate_raw() output for analysis, generate() output for display.
-#
-# Gate: boundary_presence check runs first on raw grayscale.
-# Pixels == 255 are inside the set (iteration == max_iter).
-# If inside_ratio < 0.02 the tile is fully outside - no boundary.
-# If inside_ratio > 0.98 the tile is fully inside - no boundary.
-# Either case -> score = 0, skip all other metrics.
+"""
+Composite quality scoring for fractal images.
+Weights based on Youvan (2024):
+    fractal dimension 35%  (Section 6.1)
+    Shannon entropy   25%  (Section 6.4)
+    pixel variance    20%  (Section 6.1)
+    edge density      20%  (Section 4.2)
+
+Pass generate_raw() output for analysis, generate() output for display.
+Gate: boundary_presence check runs first on raw grayscale.
+Pixels == 255 are inside the set (iteration == max_iter).
+If inside_ratio < 0.02 the tile is fully outside - no boundary.
+If inside_ratio > 0.98 the tile is fully inside - no boundary.
+Either case -> score = 0, skip all other metrics.
+"""
 
 from typing import Dict, Tuple
 

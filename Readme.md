@@ -44,20 +44,17 @@ PROJECT_ROOT=/path/to/AI-fractals
 ## Directory Structure
 ```
 .
-├── example_images/
 ├── docs/
-├── notebooks/
+├── dataset/                        # training data - default output of dataset_builder (too big to store on GH)
+├── example_images/                 # So far, only regularly generated (no CNN / GANs, yet)
+├── notebooks/                      # demos, prototyping
 ├── scripts/
-│   └── cli_dataset_builder.py
-├── config/
-├── dataset/
-├── src/
-│   └── ai_fractals/
-├── LICENSE
-├── Readme.md
-├── TODO.md
-├── pyproject.toml
-└── requirements.txt
+│   └── cli_dataset_builder.py      # for creating the training-dataset (usage, see below)
+└── src/
+    └── ai_fractals/
+        ├── analysis                # module for evaluating fractals (used for both generating and CNN / Gans training)
+        ├── data                    # dataset_builder and shoreline_extractor
+        └── generators              # the fractal generators (Mandelbrot, Julia)
 ```
 
 ## CLI Usage

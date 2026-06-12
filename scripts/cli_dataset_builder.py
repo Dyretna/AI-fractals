@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import logging
 import os
 from pathlib import Path
 
@@ -50,6 +51,12 @@ def main():
         default="twilight",
         help="sets the colormap of the fractal (using matplotlibs cmaps)",
     )
+    parser.add_argument(
+        "--verbose",
+        type=int,
+        default=0,
+        help="sets logger to verbose -> show what device is run, etc..",
+    )
 
     parser.add_argument("--out", type=str, default=None, help="Output directory")
     args = parser.parse_args()
@@ -62,6 +69,12 @@ def main():
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # log level
+    if args.verbose:
+        log_level = logging.INFO
+    else:
+        log_level = logging.WARNING
+
     # Build dataset
     builder = FractalDatasetBuilder(
         fractal_type=args.type,
@@ -69,9 +82,10 @@ def main():
         height=args.height,
         max_iter=args.max_iter,
         colormap=args.cmap,
+        log_level=log_level,
         output_dir=output_dir,
     )
-
+    print("\n", builder, "\n")
     builder.run(args.n)
 
 

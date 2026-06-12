@@ -15,13 +15,12 @@ Modules:
 __version__ = "0.1.0"
 
 from .data import FractalDatasetBuilder, ShorelineBatchExtractor
-from .generators import BaseFractalGenerator, JuliaGenerator, MandelbrotGenerator
+from .generators import BaseFractalGenerator, create_generator
 
 __all__ = [
     # Generators
     "BaseFractalGenerator",
-    "MandelbrotGenerator",
-    "JuliaGenerator",
+    "create_generator",
     # Data
     "FractalDatasetBuilder",
     "ShorelineBatchExtractor",

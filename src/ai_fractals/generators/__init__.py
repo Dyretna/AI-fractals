@@ -4,14 +4,17 @@ This module contains classes for generating various fractal types
 including Mandelbrot and Julia sets.
 """
 
-from .fractal_generators import (
-    BaseFractalGenerator,
-    JuliaGenerator,
-    MandelbrotGenerator,
-)
+from .base import BaseFractalGenerator
+from .factory import create_generator
+from .julia import JuliaCPU, JuliaGPU
+from .mandelbrot import MandelbrotCPU, MandelbrotGPU
 
 __all__ = [
     "BaseFractalGenerator",
-    "MandelbrotGenerator",
-    "JuliaGenerator",
+    "MandelbrotCPU",
+    "MandelbrotGPU",
+    "JuliaCPU",
+    "JuliaGPU",
+    # factory
+    "create_generator",
 ]
