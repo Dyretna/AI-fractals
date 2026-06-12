@@ -26,6 +26,31 @@ def main():
         default="mandelbrot",
         help="Fractal type: mandelbrot or julia",
     )
+    parser.add_argument(
+        "--width",
+        type=int,
+        default=1200,
+        help="width of fractal",
+    )
+    parser.add_argument(
+        "--height",
+        type=int,
+        default=1200,
+        help="height of fractal",
+    )
+    parser.add_argument(
+        "--max_iter",
+        type=int,
+        default=900,
+        help="sets max iterations for the fractal generator",
+    )
+    parser.add_argument(
+        "--cmap",
+        type=str,
+        default="twilight",
+        help="sets the colormap of the fractal (using matplotlibs cmaps)",
+    )
+
     parser.add_argument("--out", type=str, default=None, help="Output directory")
     args = parser.parse_args()
 
@@ -40,6 +65,10 @@ def main():
     # Build dataset
     builder = FractalDatasetBuilder(
         fractal_type=args.type,
+        width=args.width,
+        height=args.height,
+        max_iter=args.max_iter,
+        colormap=args.cmap,
         output_dir=output_dir,
     )
 

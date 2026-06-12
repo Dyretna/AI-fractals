@@ -2,26 +2,30 @@
 
 AI-Enhanced Fractal Geometry: Merging Machine Learning with Traditional Fractal Mathematics
 
-![image](twilight_example.png)
+![image](example_images/d03_-1.01600_0.27600_gist_stern.png)
 
 ## Overview
 
-This project explores the intersection of artificial intelligence and fractal geometry, combining machine learning techniques with traditional fractal mathematics to generate and analyze fractal patterns. The work is inspired by research from **Douglas C. Youvan** (doug@youvan.com), detailed in the paper [AI-Enhanced Fractal Geometry: Merging Machine Learning with Traditional Fractal Mathematics](docs/AI-EnhancedFractalGeometry-MergingMachineLearningwithTraditionalFractalMathematics.pdf).
+This project explores the intersection of artificial intelligence and fractal geometry, combining machine learning techniques with traditional fractal mathematics to generate and analyze fractal patterns.
 
-## Features
+The project is inspired by research from **Douglas C. Youvan** (doug@youvan.com), detailed in the paper [AI-Enhanced Fractal Geometry: Merging Machine Learning with Traditional Fractal Mathematics](docs/AI-EnhancedFractalGeometry-MergingMachineLearningwithTraditionalFractalMathematics.pdf).
 
-- **Fractal Generation**: Generate Mandelbrot and Julia set fractals with configurable parameters
+## project Status (June 2026)
+
+Completed:
+- **Automatic Fractal Generation**: Generate Mandelbrot and Julia set fractals with configurable parameters
 - **Shoreline Extraction**: Extract and analyze fractal shoreline patterns from generated fractals
-- **AI Training**: Train neural networks (CNNs, GANs) on fractal datasets to generate pseudo-fractals
-- **Image Pipeline**: Automated saving and processing of fractal images
 
-## Project Structure
+In Progress:
+- **CUDA acceleration**: CPU-based fractal generation is slow for large datasets. Future versions will use PyTorch tensors on CUDA to parallelize escape-time iteration and dramatically speed up fractal generation. see https://github.com/TomLemsky/pytorch-fractals?tab=readme-ov-file
+
+- **AI Training**: Train neural networks (CNNs, GANs) on fractal datasets to generate pseudo-fractals
 
 ## Installation
 
 Requires Python 3.10 or higher.
 
-### Basic Installation
+Clone and install:
 
 ```bash
 # Clone the repository
@@ -30,10 +34,67 @@ cd AI-fractals
 
 # Install dependencies
 pip install -e .
-
-# For development
-pip install -e ".[dev]"
 ```
+Set your project directory in a `.env` file:
+
+```
+PROJECT_ROOT=/path/to/AI-fractals
+```
+
+## Directory Structure
+```
+.
+├── example_images/
+├── docs/
+├── notebooks/
+├── scripts/
+│   └── cli_dataset_builder.py
+├── config/
+├── dataset/
+├── src/
+│   └── ai_fractals/
+├── LICENSE
+├── Readme.md
+├── TODO.md
+├── pyproject.toml
+└── requirements.txt
+```
+
+## CLI Usage
+The project includes a command-line runner for generating fractal datasets:
+
+Basic usage (default: 50 Mandelbrot images):
+
+    python scripts/cli_dataset_builder.py
+
+Generate 200 Julia images with a specific colormap:
+
+    python scripts/cli_dataset_builder.py \
+        --n 200 \
+        --type julia \
+        --cmap plasma
+
+High-resolution output:
+
+    python scripts/cli_dataset_builder.py \
+        --width 2048 \
+        --height 2048 \
+        --max_iter 1500
+
+Save output to a custom directory:
+
+    python scripts/cli_dataset_builder.py \
+        --n 100 \
+        --out /tmp/my_fractals
+
+### CLI Arguments
+    --n          Number of images to generate (default: 50)
+    --type       Fractal type: mandelbrot or julia (default: mandelbrot)
+    --width      Image width in pixels (default: 1200)
+    --height     Image height in pixels (default: 1200)
+    --max_iter   Maximum iterations for the fractal generator (default: 900)
+    --cmap       Matplotlib colormap name (default: twilight)
+    --out        Output directory (default: PROJECT_ROOT/dataset/fractals/<type>)
 
 ## Research Background
 
@@ -43,27 +104,17 @@ This project implements concepts from AI-enhanced fractal geometry, where machin
 2. **Generate new patterns**: GANs create novel pseudo-fractals with learned properties
 3. **Analyze complexity**: Study the fractal dimension and properties of generated patterns
 
-The approach bridges classical fractal mathematics with modern deep learning, enabling exploration of new fractal-like structures.
+These components are planned but not yet implemented.
 
-## Configuration
+## Author
 
-Set your project directory in a `.env` file:
-
-```
-PROJECT_DIR=/path/to/AI-fractals
-```
+**Jesper Anteryd** (jesper.anteryd@proton.me)
+Inspired by the research of **Douglas C. Youvan**
 
 ## License
 
 See [LICENSE](LICENSE) file for details.
 
-## Author
-
-**Jesper Anteryd** (jesper.anteryd@proton.me)
-
-Inspired by the research of **Douglas C. Youvan**
-
 ## References
 
 - Youvan, D.C. "AI-Enhanced Fractal Geometry: Merging Machine Learning with Traditional Fractal Mathematics"
-- [Project Repository](https://github.com/Dyretna/AI-fractals)
