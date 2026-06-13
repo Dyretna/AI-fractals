@@ -52,21 +52,23 @@ class BaseFractalGenerator(ABC):
         self.log.info(f"using device: {self.device}")
 
     @abstractmethod
-    def _compute(self, *args, **kwargs):
+    def _compute(self, *args, **kwargs) -> np.ndarray:
         """Raw escape-time iteration counts, shape (height, width)."""
         raise NotImplementedError
 
     @abstractmethod
-    def generate(self, *args, **kwargs):
+    def generate(self, *args, **kwargs) -> np.ndarray:
         """RGB uint8 for display - article Section 4.1"""
         raise NotImplementedError
 
     @abstractmethod
-    def generate_raw(self, *args, **kwargs):
+    def generate_raw(self, *args, **kwargs) -> np.ndarray:
         """Grayscale uint8 for analysis - avoids colormap distortion."""
         raise NotImplementedError
 
-    def match_aspect(self, xmin, xmax, ymin, ymax):
+    def match_aspect(
+        self, xmin: float, xmax: float, ymin: float, ymax: float
+    ) -> tuple[float, float, float, float]:
         target_ratio = self.width / self.height
         x_range = xmax - xmin
         y_range = ymax - ymin
@@ -91,7 +93,7 @@ class BaseFractalGenerator(ABC):
 
         return xmin, xmax, ymin, ymax
 
-    def normalize_RGB(self, img):
+    def normalize_RGB(self, img: np.ndarray) -> np.ndarray:
         """normalizes and applies to 0-1 for colormap. converts to uint8 RGB"""
         x = img.astype(np.float32)
 
@@ -110,13 +112,12 @@ class BaseFractalGenerator(ABC):
         colored = self.cmap(x)
         return (colored[:, :, :3] * 255).astype(np.uint8)
 
-    def supersample(self, img):
+    def supersample(self, img: np.ndarray) -> np.ndarray:
+        """Upscales, downscales, and applies Gaussian blur"""
         up = cv2.resize(
             img, (self.width * 2, self.height * 2), interpolation=cv2.INTER_LINEAR
         )
-
         down = cv2.resize(up, (self.width, self.height), interpolation=cv2.INTER_AREA)
-
         smooth = cv2.GaussianBlur(down, (3, 3), sigmaX=0.4)
 
         return smooth
