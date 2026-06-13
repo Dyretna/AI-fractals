@@ -16,9 +16,9 @@ class BaseFractalGenerator(ABC):
 
     def __init__(
         self,
-        width=1200,
-        height=1200,
-        max_iter=512,
+        width=1024,
+        height=1024,
+        max_iter=1024,
         colormap="twilight",
         use_supersampling=True,
         log_level=logging.WARNING,

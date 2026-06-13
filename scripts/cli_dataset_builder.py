@@ -10,55 +10,87 @@ from ai_fractals.data.dataset_builder import FractalDatasetBuilder
 
 
 def main():
-    # Load environment variables
     load_dotenv()
     project_root = Path(os.getenv("PROJECT_ROOT"))
 
-    # CLI
     parser = argparse.ArgumentParser(
-        description="Generate fractal dataset via tile-search."
+        description=(
+            "Generate a fractal dataset using a tile-search refinement strategy.\n"
+            "This tool renders low-resolution tiles to locate visually interesting\n"
+            "regions, then produces high-resolution fractal images using\n"
+            "supersampling and post-processing."
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog="""
+Examples:
+  Generate 50 Mandelbrot images in 4K:
+    python cli_dataset_builder.py --n 50 --type mandelbrot --width 3840 --height 2160
+
+  Generate Julia set images with a custom colormap:
+    python cli_dataset_builder.py --type julia --cmap plasma
+
+  Save output to a custom directory:
+    python cli_dataset_builder.py --out /tmp/fractals
+
+  Enable verbose logging:
+    python cli_dataset_builder.py --verbose 1
+""",
     )
-    parser.add_argument(
-        "--n", type=int, default=50, help="Number of images to generate"
+
+    # -----------------------------
+    # General options
+    # -----------------------------
+    general = parser.add_argument_group("General options")
+    general.add_argument(
+        "--n", type=int, default=50, help="Number of images to generate (default: 50)"
     )
-    parser.add_argument(
+    general.add_argument(
         "--type",
         type=str,
         default="mandelbrot",
-        help="Fractal type: mandelbrot or julia",
+        help="Fractal type: mandelbrot or julia (default: mandelbrot)",
     )
-    parser.add_argument(
-        "--width",
-        type=int,
-        default=1200,
-        help="width of fractal",
+    general.add_argument(
+        "--out",
+        type=str,
+        default=None,
+        help="Output directory (default: dataset/fractals/<type>)",
     )
-    parser.add_argument(
-        "--height",
-        type=int,
-        default=1200,
-        help="height of fractal",
+
+    # -----------------------------
+    # Rendering options
+    # -----------------------------
+    render = parser.add_argument_group("Rendering options")
+    render.add_argument(
+        "--width", type=int, default=1024, help="Output image width (default: 1024)"
     )
-    parser.add_argument(
+    render.add_argument(
+        "--height", type=int, default=1024, help="Output image height (default: 1024)"
+    )
+    render.add_argument(
         "--max_iter",
         type=int,
-        default=900,
-        help="sets max iterations for the fractal generator",
+        default=1024,
+        help="Maximum iterations for escape-time algorithm (default: 1024)",
     )
-    parser.add_argument(
+    render.add_argument(
         "--cmap",
         type=str,
         default="twilight",
-        help="sets the colormap of the fractal (using matplotlibs cmaps)",
+        help="Matplotlib colormap to use (default: twilight)",
     )
-    parser.add_argument(
+
+    # -----------------------------
+    # Debugging / Logging
+    # -----------------------------
+    debug = parser.add_argument_group("Debugging")
+    debug.add_argument(
         "--verbose",
         type=int,
         default=0,
-        help="sets logger to verbose -> show what device is run, etc..",
+        help="Verbosity level: 0=warnings only, 1=info logs (default: 0)",
     )
 
-    parser.add_argument("--out", type=str, default=None, help="Output directory")
     args = parser.parse_args()
 
     # Determine output directory
@@ -69,11 +101,8 @@ def main():
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # log level
-    if args.verbose:
-        log_level = logging.INFO
-    else:
-        log_level = logging.WARNING
+    # Logging level
+    log_level = logging.INFO if args.verbose else logging.WARNING
 
     # Build dataset
     builder = FractalDatasetBuilder(
@@ -85,6 +114,7 @@ def main():
         log_level=log_level,
         output_dir=output_dir,
     )
+
     print("\n", builder, "\n")
     builder.run(args.n)
 
