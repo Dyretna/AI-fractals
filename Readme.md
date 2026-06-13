@@ -1,14 +1,12 @@
 # AI-Fractals
 
-AI-Enhanced Fractal Geometry: Merging Machine Learning with Traditional Fractal Mathematics
-
-![image](example_images/d03_-1.01600_0.27600_gist_stern.png)
+![image](example_images/d09_0.11673_-0.62989_twilight.png)
 
 ## Overview
 
 This project explores the intersection of artificial intelligence and fractal geometry, combining machine learning techniques with traditional fractal mathematics to generate and analyze fractal patterns.
 
-The project is inspired by research from **Douglas C. Youvan** (doug@youvan.com), detailed in the paper [AI-Enhanced Fractal Geometry: Merging Machine Learning with Traditional Fractal Mathematics](docs/AI-EnhancedFractalGeometry-MergingMachineLearningwithTraditionalFractalMathematics.pdf).
+The project is inspired by research from **Douglas C. Youvan** (doug@youvan.com), detailed in the paper [AI-Enhanced Fractal Geometry: Merging Machine Learning with Traditional Fractal Mathematics](docs/ai-enhanced-fractal-geometry.md).
 
 ## project Status (June 2026)
 
@@ -35,11 +33,26 @@ cd AI-fractals
 # Install dependencies
 pip install -e .
 ```
+
+### Set environment paths with python-dotenv
+This repo makes use of load_dotenv() from python-dotenv.
 Set your project directory in a `.env` file:
 
 ```
 PROJECT_ROOT=/path/to/AI-fractals
 ```
+
+Then all paths will load correctly.
+
+
+### CUDA (GPU acceleration)
+This project uses pytorch with CUDA-support for fast generation of fractals. Install the CUDA-version of PyTorch manually:
+
+```
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu132
+```
+CPU works, but is much slower.
+
 
 ## Directory Structure
 ```
@@ -87,9 +100,9 @@ Save output to a custom directory:
 ### CLI Arguments
     --n          Number of images to generate (default: 50)
     --type       Fractal type: mandelbrot or julia (default: mandelbrot)
-    --width      Image width in pixels (default: 1200)
-    --height     Image height in pixels (default: 1200)
-    --max_iter   Maximum iterations for the fractal generator (default: 900)
+    --width      Image width in pixels (default: 1024)
+    --height     Image height in pixels (default: 1024)
+    --max_iter   Maximum iterations for the fractal generator (default: 1024)
     --cmap       Matplotlib colormap name (default: twilight)
     --out        Output directory (default: PROJECT_ROOT/dataset/fractals/<type>)
 

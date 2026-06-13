@@ -23,9 +23,9 @@ keywords = ["ai", "fractals"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Programming Language :: Python :: 3.10",
-    "Intended Audience :: Science/Research",
+    "Intended Audience :: Python devs / AI devs / Artists",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Fractals/Arts",
 ]
 dependencies = [
     "numpy>=2.2.0",
@@ -33,6 +33,8 @@ dependencies = [
     "matplotlib>=3.10.0",
     "pillow>=12.1.0",
     "scikit-image>=0.22.0",
+    "torch==2.12.0",
+    "torchvision==0.27.0",
     "tqdm>=4.66.0",
     "python-dotenv>=1.2.0",
 ]
