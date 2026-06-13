@@ -37,7 +37,7 @@ class FractalDatasetBuilder:
         tile_resolution: int = 200,
         quality_threshold: float = 0.1,
         n_tiles: int = 5,
-        colormap: str = "twilight",
+        colormap: str = "twilight_shifted",
         log_level: int = logging.WARNING,
         output_dir: Path = None,
     ):
@@ -274,8 +274,8 @@ class FractalDatasetBuilder:
     def __str__(self):
         rows = []
         rows.append(f"{self.__class__.__name__}")
-        rows.append(f"Device: {self.device}")
-        rows.append(f"fractal_type={self.fractal_type}")
-        rows.append(f"colormap={self.colormap}")
-        rows.append(f"output_dir='{self.output_dir}'")
+        rows.append(f"Device:       {self.device}")
+        rows.append(f"fractal_type: {self.fractal_type}")
+        rows.append(f"colormap:     {self.colormap}")
+        rows.append(f"output_dir:   {self.output_dir}")
         return "\n  ".join(rows)

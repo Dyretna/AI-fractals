@@ -76,8 +76,8 @@ Examples:
     render.add_argument(
         "--cmap",
         type=str,
-        default="twilight",
-        help="Matplotlib colormap to use (default: twilight)",
+        default="twilight_shifted",
+        help="Matplotlib colormap to use (default: twilight_shifted)",
     )
 
     # -----------------------------
