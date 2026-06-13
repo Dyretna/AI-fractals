@@ -18,6 +18,8 @@ Completed:
 
 In Progress:
 - **AI Training**: Train neural networks (CNNs, GANs) on fractal datasets to generate pseudo-fractals
+- **Julia Set**: Initial infrastructure for Julia set generation is implemented (GPU/CPU backends, parameter handling, tile‑search integration). However, Julia sets are extremely sensitive to the choice of the complex parameter c, and the current sampling strategy is only preliminary.
+
 
 ## Installation
 
@@ -77,25 +79,12 @@ Basic usage (default: 50 Mandelbrot images):
 
     python scripts/cli_dataset_builder.py
 
-Generate 200 Julia images with a specific colormap:
-
-    python scripts/cli_dataset_builder.py \
-        --n 200 \
-        --type julia \
-        --cmap plasma
-
 High-resolution output:
 
     python scripts/cli_dataset_builder.py \
         --width 2048 \
         --height 2048 \
         --max_iter 1500
-
-Save output to a custom directory:
-
-    python scripts/cli_dataset_builder.py \
-        --n 100 \
-        --out /tmp/my_fractals
 
 ### CLI Arguments
     --n          Number of images to generate (default: 50)

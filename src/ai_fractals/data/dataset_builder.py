@@ -12,7 +12,12 @@ from dotenv import load_dotenv
 from tqdm import tqdm
 
 from ai_fractals.analysis import FractalQualityEvaluator
-from ai_fractals.generators import BaseFractalGenerator, create_generator
+from ai_fractals.generators import (
+    BaseFractalGenerator,
+    create_fractal_state,
+    create_generator,
+    get_default_bounds,
+)
 from ai_fractals.logging_config import get_logger
 
 
@@ -30,7 +35,7 @@ class FractalDatasetBuilder:
         height: int = 1024,
         max_iter: int = 1024,
         tile_resolution: int = 200,
-        quality_threshold: float = 0.3,
+        quality_threshold: float = 0.1,
         n_tiles: int = 5,
         colormap: str = "twilight",
         log_level: int = logging.WARNING,
@@ -47,8 +52,10 @@ class FractalDatasetBuilder:
             ).resolve()
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
-        # set params
+        # set type and its state (c for julia, etc)
         self.fractal_type = fractal_type
+        self.state = create_fractal_state(self.fractal_type)
+
         self.save_min_depth = save_min_depth
         self.save_max_depth = save_max_depth
         self.max_iter = max_iter
@@ -64,6 +71,7 @@ class FractalDatasetBuilder:
             colormap=colormap,
             log_level=log_level,
             use_supersampling=False,
+            state=self.state,
         )
         self.hires_gen: BaseFractalGenerator = create_generator(
             fractal_type=self.fractal_type,
@@ -73,12 +81,13 @@ class FractalDatasetBuilder:
             colormap=self.colormap,
             log_level=log_level,
             use_supersampling=True,
+            state=self.state,
         )
 
         self.evaluator = FractalQualityEvaluator(quality_threshold)
 
         # Bounds
-        self.bounds = (-2.0, 1.0, -1.5, 1.5)
+        self.bounds = get_default_bounds(self.fractal_type, self.state)
         self.depth = 0
 
         # stuck detection
@@ -170,7 +179,7 @@ class FractalDatasetBuilder:
         return 0
 
     def reset(self):
-        self.bounds = self._default_bounds(self.fractal_type)
+        self.bounds = get_default_bounds(self.fractal_type, self.state)
         self.depth = 0
         self.consecutive_fallbacks = 0
 
@@ -241,13 +250,6 @@ class FractalDatasetBuilder:
         rows.append(f"Output dir: {self.output_dir}")
 
         self.log.info("\n - ".join(rows))
-
-    def _default_bounds(self, fractal_type):
-        if fractal_type == "mandelbrot":
-            return (-2.0, 1.0, -1.5, 1.5)
-        if fractal_type == "julia":
-            return (-2.0, 2.0, -2.0, 2.0)
-        raise ValueError(fractal_type)
 
     def _count_existing_pngs(self):
         return len(list(self.output_dir.glob("*.png")))

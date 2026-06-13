@@ -1,7 +1,10 @@
 # ai_fractals/generators/base.py
 
+from __future__ import annotations
+
 import logging
 from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING
 
 import cv2
 import matplotlib.pyplot as plt
@@ -10,12 +13,16 @@ import torch
 
 from ai_fractals.logging_config import get_logger
 
+if TYPE_CHECKING:
+    from .factory import FractalState
+
 
 class BaseFractalGenerator(ABC):
     """Abstract base class for fractal generators."""
 
     def __init__(
         self,
+        state: FractalState,
         width=1024,
         height=1024,
         max_iter=1024,
@@ -30,6 +37,9 @@ class BaseFractalGenerator(ABC):
         self.cmap = plt.get_cmap(colormap)
         self.use_supersampling = use_supersampling
         self.log_level = log_level
+
+        self.state = state
+        self.params = state.params
 
         # pytorch device, GPU if available
         self.device = (

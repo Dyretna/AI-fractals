@@ -5,7 +5,7 @@ including Mandelbrot and Julia sets.
 """
 
 from .base import BaseFractalGenerator
-from .factory import create_generator
+from .factory import create_fractal_state, create_generator, get_default_bounds
 from .julia import JuliaCPU, JuliaGPU
 from .mandelbrot import MandelbrotCPU, MandelbrotGPU
 
@@ -17,4 +17,6 @@ __all__ = [
     "JuliaGPU",
     # factory
     "create_generator",
+    "create_fractal_state",
+    "get_default_bounds",
 ]

@@ -6,8 +6,7 @@ from .base import BaseFractalGenerator
 
 
 class JuliaCPU(BaseFractalGenerator):
-    def _compute(self, c, xmin, xmax, ymin, ymax):
-        device = self.device
+    def _compute(self, xmin, xmax, ymin, ymax):
         xmin, xmax, ymin, ymax = self.match_aspect(xmin, xmax, ymin, ymax)
 
         x = np.linspace(xmin, xmax, self.width)
@@ -16,8 +15,7 @@ class JuliaCPU(BaseFractalGenerator):
         Z = X + 1j * Y
         img = np.zeros(Z.shape, dtype=np.int32)
 
-        self.log.info(f"using device: {device}")
-        self.log.info(f"Z dtype: ({Z.dtype}), device: {Z.device}")
+        c = self.params["c"]
 
         for i in range(1, self.max_iter):
             mask = img == 0
@@ -28,19 +26,19 @@ class JuliaCPU(BaseFractalGenerator):
         img[img == 0] = self.max_iter
         return img
 
-    def generate(self, c, xmin, xmax, ymin, ymax):
-        img = self.normalize_RGB(self._compute(c, xmin, xmax, ymin, ymax))
+    def generate(self, xmin, xmax, ymin, ymax):
+        img = self.normalize_RGB(self._compute(xmin, xmax, ymin, ymax))
         if self.use_supersampling:
             img = self.supersample(img)
         return img
 
-    def generate_raw(self, c, xmin, xmax, ymin, ymax):
-        img = self._compute(c, xmin, xmax, ymin, ymax)
+    def generate_raw(self, xmin, xmax, ymin, ymax):
+        img = self._compute(xmin, xmax, ymin, ymax)
         return (img / self.max_iter * 255).astype(np.uint8)
 
 
 class JuliaGPU(BaseFractalGenerator):
-    def _compute(self, c, xmin, xmax, ymin, ymax):
+    def _compute(self, xmin, xmax, ymin, ymax):
         xmin, xmax, ymin, ymax = self.match_aspect(xmin, xmax, ymin, ymax)
 
         # double precision coordinates
@@ -56,7 +54,7 @@ class JuliaGPU(BaseFractalGenerator):
         Z = (X + 1j * Y).to(torch.complex128)
 
         # complex128 constant
-        c = torch.tensor(c, device=self.device, dtype=torch.complex128)
+        c = torch.tensor(self.params["c"], device=self.device, dtype=torch.complex128)
 
         img = torch.zeros(Z.shape, dtype=torch.int32, device=self.device)
 
@@ -69,12 +67,12 @@ class JuliaGPU(BaseFractalGenerator):
         img[img == 0] = self.max_iter
         return img.cpu().numpy()
 
-    def generate(self, c, xmin, xmax, ymin, ymax):
-        img = self.normalize_RGB(self._compute(c, xmin, xmax, ymin, ymax))
+    def generate(self, xmin, xmax, ymin, ymax):
+        img = self.normalize_RGB(self._compute(xmin, xmax, ymin, ymax))
         if self.use_supersampling:
             img = self.supersample(img)
         return img
 
-    def generate_raw(self, c, xmin, xmax, ymin, ymax):
-        img = self._compute(c, xmin, xmax, ymin, ymax)
+    def generate_raw(self, xmin, xmax, ymin, ymax):
+        img = self._compute(xmin, xmax, ymin, ymax)
         return (img / self.max_iter * 255).astype(np.uint8)
