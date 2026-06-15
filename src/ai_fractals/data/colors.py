@@ -28,19 +28,22 @@ GREYS = [
 ]
 
 SINGLE_COLOR_GRADIENTS = [
-    "Greens",
+    "BluesGreens",
     "Oranges",
     "Purples",
     "Reds",
     "pink",
-    "Greens_r",
+    "copper",
+    # reversed
+    "Blues_rGreens_r",
     "Oranges_r",
     "Purples_r",
     "Reds_r",
     "pink_r",
+    "copper_r",
 ]
 
-GRADIENT_COMBINATIONS = [
+TWO_COLOR_GRADIENTS = [
     "BrBG",
     "BuGn",
     "BuPu",
@@ -49,19 +52,12 @@ GRADIENT_COMBINATIONS = [
     "PRGn",
     "PiYG",
     "PuBu",
-    "PuBuGn",
     "PuOr",
     "PuRd",
     "RdBu",
     "RdGy",
     "RdPu",
-    "RdYlBu",
-    "RdYlGn",
     "YlGn",
-    "YlGnBu",
-    "YlOrBr",
-    "YlOrRd",
-    "CMRmap",
     "Wistia",
     # reversed
     "BrBG_r",
@@ -72,20 +68,29 @@ GRADIENT_COMBINATIONS = [
     "PRGn_r",
     "PiYG_r",
     "PuBu_r",
-    "PuBuGn_r",
     "PuOr_r",
     "PuRd_r",
     "RdBu_r",
     "RdGy_r",
     "RdPu_r",
+    "YlGn_r",
+    "Wistia_r",
+]
+
+THREE_COLOR_GRADIENTS = [
+    "PuBuGn",
+    "RdYlBu",
+    "RdYlGn",
+    "YlGnBu",
+    "YlOrBr",
+    "YlOrRd",
+    # reversed
+    "PuBuGn_r",
     "RdYlBu_r",
     "RdYlGn_r",
-    "YlGn_r",
     "YlGnBu_r",
     "YlOrBr_r",
     "YlOrRd_r",
-    "CMRmap_r",
-    "Wistia_r",
 ]
 
 THEMED = [
@@ -129,6 +134,7 @@ THEMED = [
     "summer",
     "terrain",
     "winter",
+    "CMRmap",
     # Reversed
     "magma_r",
     "inferno_r",
@@ -170,6 +176,7 @@ THEMED = [
     "summer_r",
     "terrain_r",
     "winter_r",
+    "CMRmap_r",
 ]
 
 # psychedelic
@@ -213,6 +220,7 @@ DISCRETE_GRADIENTS = [
 # Filter out:
 #   GREYS
 #   SINGLE_COLOR_GRADIENTS
+#   TWO_COLOR_GRADIENTS
 #   "custom filter"
 # ------------------------------------------------------------------------------
 CUSTOM_OUT = [
@@ -232,8 +240,9 @@ CUSTOM_OUT = [
 
 # Combine all redundant
 OUT_FILTERED = [
-    *SINGLE_COLOR_GRADIENTS,
     *GREYS,
+    *SINGLE_COLOR_GRADIENTS,
+    *TWO_COLOR_GRADIENTS,
     *CUSTOM_OUT,
 ]
 

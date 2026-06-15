@@ -63,8 +63,8 @@ if __name__ == "__main__":
     if not PROJECT_ROOT.is_dir():
         raise IsADirectoryError("check PROJECT_ROOT in .env")
 
-    img_dir = PROJECT_ROOT / "dataset" / "mandelbrot" / "1024_1024_iter256"
-    output_dir = PROJECT_ROOT / "dataset" / "out"
+    img_dir = PROJECT_ROOT / "dataset" / "mandelbrot" / "1024_1024_iter512"
+    output_dir = PROJECT_ROOT / "dataset" / "out" / "1024_1024_iter512"
     bad_cmaps = OUT_FILTERED
 
     move_bad_cmaps(img_dir, output_dir, bad_cmaps)
