@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
+from matplotlib import colormaps
 
 from ai_fractals.data.dataset_builder import FractalDatasetBuilder
 
@@ -21,19 +22,21 @@ def main():
             "supersampling and post-processing."
         ),
         formatter_class=argparse.RawTextHelpFormatter,
-        epilog="""
+        epilog=f"""
 Examples:
-  Generate 50 Mandelbrot images in 4K:
-    python cli_dataset_builder.py --n 50 --type mandelbrot --width 3840 --height 2160
+    Generate 50 Mandelbrot images in 4K:
+        python cli_dataset_builder.py --n 50 --type mandelbrot --width 3840 --height 2160
 
-  Generate Julia set images with a custom colormap:
-    python cli_dataset_builder.py --type julia --cmap plasma
+    Generate Julia set images with a custom colormap:
+        python cli_dataset_builder.py --type julia --cmap plasma
 
-  Save output to a custom directory:
-    python cli_dataset_builder.py --out /tmp/fractals
+    Save output to a custom directory:
+        python cli_dataset_builder.py --out /tmp/fractals
 
-  Enable verbose logging:
-    python cli_dataset_builder.py --verbose 1
+    Enable verbose logging:
+        python cli_dataset_builder.py --verbose 1
+
+{colormaps}
 """,
     )
 
@@ -49,12 +52,6 @@ Examples:
         type=str,
         default="mandelbrot",
         help="Fractal type: mandelbrot or julia (default: mandelbrot)",
-    )
-    general.add_argument(
-        "--out",
-        type=str,
-        default=None,
-        help="Output directory (default: dataset/fractals/<type>)",
     )
 
     # -----------------------------
@@ -77,7 +74,17 @@ Examples:
         "--cmap",
         type=str,
         default="twilight_shifted",
-        help="Matplotlib colormap to use (default: twilight_shifted)",
+        help=("Matplotlib colormap to use (default: twilight_shifted)"),
+    )
+
+    # -----------------------------
+    # Output Directory
+    # -----------------------------
+    general.add_argument(
+        "--out",
+        type=str,
+        default=None,
+        help="Output directory (default: dataset/fractals/<type>/<width>_<height>/)",
     )
 
     # -----------------------------

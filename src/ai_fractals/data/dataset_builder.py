@@ -23,7 +23,7 @@ from ai_fractals.logging_config import get_logger
 
 class FractalDatasetBuilder:
     """
-    Automated batch fractal dataset generator using tile-search refinement.
+    Automated batch fractal dataset generator using tile-search strategy.
     """
 
     def __init__(
@@ -41,21 +41,12 @@ class FractalDatasetBuilder:
         log_level: int = logging.WARNING,
         output_dir: Path = None,
     ):
-        # set paths
-        load_dotenv()
-        project_root = Path(os.getenv("PROJECT_ROOT"))
-        if output_dir:
-            self.output_dir = Path(output_dir).resolve()
-        else:
-            self.output_dir = Path(
-                project_root / "dataset" / "fractals" / fractal_type
-            ).resolve()
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-
         # set type and its state (c for julia, etc)
         self.fractal_type = fractal_type
         self.state = create_fractal_state(self.fractal_type)
 
+        self.width = width
+        self.height = height
         self.save_min_depth = save_min_depth
         self.save_max_depth = save_max_depth
         self.max_iter = max_iter
@@ -75,8 +66,8 @@ class FractalDatasetBuilder:
         )
         self.hires_gen: BaseFractalGenerator = create_generator(
             fractal_type=self.fractal_type,
-            width=width,
-            height=height,
+            width=self.width,
+            height=self.height,
             max_iter=max_iter,
             colormap=self.colormap,
             log_level=log_level,
@@ -97,6 +88,20 @@ class FractalDatasetBuilder:
         # pytorch device and CUDA
         self.has_cuda = torch.cuda.is_available()
         self.device = torch.device("cuda") if self.has_cuda else torch.device("cpu")
+
+        # set Output path
+        load_dotenv()
+        project_root = Path(os.getenv("PROJECT_ROOT"))
+        if output_dir:
+            self.output_dir = Path(output_dir).resolve()
+        else:
+            self.output_dir = Path(
+                project_root
+                / "dataset"
+                / fractal_type
+                / f"{width}_{height}_iter{max_iter}"
+            ).resolve()
+        self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # logging
         self.log = get_logger(__name__, level=log_level)
@@ -183,34 +188,6 @@ class FractalDatasetBuilder:
         self.depth = 0
         self.consecutive_fallbacks = 0
 
-    # ---------------------------------------------------------------------------
-    # Saving
-    # ---------------------------------------------------------------------------
-
-    def _save_with_metadata(self, hires, chosen):
-        xmin, xmax, ymin, ymax = chosen["bounds"]
-        base = f"d{self.depth:02d}_{xmin:.5f}_{ymin:.5f}"
-
-        img = hires
-        fname = self.output_dir / f"{base}_{self.colormap}.png"
-        cv2.imwrite(str(fname), cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
-
-        meta = {
-            "fractal_type": self.fractal_type,
-            "depth": self.depth,
-            "bounds": chosen["bounds"],
-            "score": chosen["score"],
-            "metrics": chosen.get("metrics", {}),
-            "max_iter": self.max_iter,
-            "width": hires.shape[1],
-            "height": hires.shape[0],
-            "colormap": self.colormap,
-            "timestamp": datetime.now().isoformat(),
-        }
-
-        with open(fname.with_suffix(".json"), "w") as f:
-            json.dump(meta, f, indent=2)
-
     # --------------------------------------------------------------------------
     # Tile search
     # --------------------------------------------------------------------------
@@ -237,6 +214,35 @@ class FractalDatasetBuilder:
                 )
 
         return tiles
+
+    # ---------------------------------------------------------------------------
+    # Saving
+    # ---------------------------------------------------------------------------
+
+    def _save_with_metadata(self, img, chosen):
+        img_type = ".png"
+        fname = self.output_dir / (
+            f"d{self.depth:02d}_iter{self.max_iter}_{self.colormap}"
+        )
+        cv2.imwrite(
+            str(fname.with_suffix(img_type)), cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        )
+
+        meta = {
+            "fractal_type": self.fractal_type,
+            "depth": self.depth,
+            "bounds": chosen["bounds"],
+            "score": chosen["score"],
+            "metrics": chosen.get("metrics", {}),
+            "max_iter": self.max_iter,
+            "width": img.shape[1],
+            "height": img.shape[0],
+            "colormap": self.colormap,
+            "timestamp": datetime.now().isoformat(),
+        }
+
+        with open(fname.with_suffix(".json"), "w") as f:
+            json.dump(meta, f, indent=2)
 
     # --------------------------------------------------------------------------
     # Helpers
@@ -276,6 +282,8 @@ class FractalDatasetBuilder:
         rows.append(f"{self.__class__.__name__}")
         rows.append(f"Device:       {self.device}")
         rows.append(f"fractal_type: {self.fractal_type}")
+        rows.append(f"resolution:   {self.width}_{self.height}")
+        rows.append(f"max_iter:     {self.max_iter}")
         rows.append(f"colormap:     {self.colormap}")
         rows.append(f"output_dir:   {self.output_dir}")
         return "\n  ".join(rows)
