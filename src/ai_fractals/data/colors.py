@@ -224,18 +224,14 @@ DISCRETE_GRADIENTS = [
 #   "custom filter"
 # ------------------------------------------------------------------------------
 CUSTOM_OUT = [
-    "OrRd",
-    "RdGy",
     "hot",
     "gist_heat",
-    "GnGu_r",
-    "OrRd_r",
-    "RdGy_r",
-    "GnBu_r",
-    "PuBu_r",
-    "YlGn_r",
-    "Wistia_r",
-    "gist_heat_r",
+    "cividis",
+    "viridis",
+    # reversed
+    "hot_rgist_heat_r",
+    "cividis_r",
+    "viridis_r",
 ]
 
 # Combine all redundant

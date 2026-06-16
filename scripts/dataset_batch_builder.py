@@ -7,8 +7,8 @@ from ai_fractals.data import CURATED_COLORMAPS, FractalDatasetBuilder
 def dataset_batch_builder(colormaps):
     for colormap in colormaps:
         for max_iter in [
-            512,
-            # 1024, 2048
+            1024,
+            # 2048
         ]:
             # Build dataset
             builder = FractalDatasetBuilder(
@@ -21,7 +21,7 @@ def dataset_batch_builder(colormaps):
             )
 
             print("\n", builder, "\n")
-            builder.run(15)
+            builder.run(14)
 
 
 if __name__ == "__main__":

@@ -19,8 +19,15 @@ def extract_cmap(filename: str) -> str:
 
     Example: d15_iter256_twilight_r.png -> twilight_r
     """
+    name = filename.split(".")[0]
+    parts = name.split("_")
 
-    return filename.rsplit("_", 1)[1].split(".")[0]
+    # reversed colormap: ends with "_r"
+    if parts[-1] == "r":
+        return parts[-2] + "_r"
+
+    # normal colormap
+    return parts[-1]
 
 
 def move_bad_cmaps(img_dir: Path, out_dir: Path, bad_cmaps: list) -> None:
@@ -63,8 +70,8 @@ if __name__ == "__main__":
     if not PROJECT_ROOT.is_dir():
         raise IsADirectoryError("check PROJECT_ROOT in .env")
 
-    img_dir = PROJECT_ROOT / "dataset" / "mandelbrot" / "1024_1024_iter512"
-    output_dir = PROJECT_ROOT / "dataset" / "out" / "1024_1024_iter512"
+    img_dir = PROJECT_ROOT / "dataset" / "mandelbrot" / "1024_1024_iter1024"
+    output_dir = PROJECT_ROOT / "dataset" / "out" / "1024_1024_iter1024"
     bad_cmaps = OUT_FILTERED
 
     move_bad_cmaps(img_dir, output_dir, bad_cmaps)
