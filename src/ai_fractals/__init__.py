@@ -14,7 +14,7 @@ Modules:
 
 __version__ = "0.1.0"
 
-from .data import FractalDatasetBuilder, ShorelineBatchExtractor
+from .data import FractalDatasetBuilder
 from .generators import BaseFractalGenerator, create_generator
 
 __all__ = [

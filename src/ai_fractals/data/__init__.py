@@ -11,7 +11,6 @@ from .colors import (
 from .dataset_builder import FractalDatasetBuilder
 from .dataset_filter_manager import DatasetFilterManager
 from .dataset_registry import DatasetRegistryManager
-from .shoreline_batch_extractor import ShorelineBatchExtractor
 
 __all__ = [
     # colormap constants
@@ -25,7 +24,6 @@ __all__ = [
     "CURATED_COLORMAPS",
     # dataset helpers
     "FractalDatasetBuilder",
-    "ShorelineBatchExtractor",
     "DatasetFilterManager",
     "DatasetRegistryManager",
 ]
