@@ -9,6 +9,8 @@ from .colors import (
     TWO_COLOR_GRADIENTS,
 )
 from .dataset_builder import FractalDatasetBuilder
+from .dataset_filter_manager import DatasetFilterManager
+from .dataset_registry import DatasetRegistryManager
 from .shoreline_batch_extractor import ShorelineBatchExtractor
 
 __all__ = [
@@ -24,4 +26,6 @@ __all__ = [
     # dataset helpers
     "FractalDatasetBuilder",
     "ShorelineBatchExtractor",
+    "DatasetFilterManager",
+    "DatasetRegistryManager",
 ]

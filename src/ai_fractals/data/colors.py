@@ -28,14 +28,16 @@ GREYS = [
 ]
 
 SINGLE_COLOR_GRADIENTS = [
-    "BluesGreens",
+    "Blues",
+    "Greens",
     "Oranges",
     "Purples",
     "Reds",
     "pink",
     "copper",
     # reversed
-    "Blues_rGreens_r",
+    "Blues_r",
+    "Greens_r",
     "Oranges_r",
     "Purples_r",
     "Reds_r",

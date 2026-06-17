@@ -220,25 +220,29 @@ class FractalDatasetBuilder:
     # ---------------------------------------------------------------------------
 
     def _save_with_metadata(self, img, chosen):
+        ts = datetime.now().isoformat()
+        cid = datetime.fromisoformat(ts).strftime("%y%m%d%H%M%S")
+
         img_type = ".png"
         fname = self.output_dir / (
-            f"d{self.depth:02d}_iter{self.max_iter}_{self.colormap}"
+            f"{cid}_{self.colormap}_iter{self.max_iter}_d{self.depth:02d}"
         )
         cv2.imwrite(
             str(fname.with_suffix(img_type)), cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         )
 
         meta = {
+            "timestamp": ts,
+            "compact_id": cid,
             "fractal_type": self.fractal_type,
+            "colormap": self.colormap,
+            "max_iter": self.max_iter,
+            "width": img.shape[1],
+            "height": img.shape[0],
             "depth": self.depth,
             "bounds": chosen["bounds"],
             "score": chosen["score"],
             "metrics": chosen.get("metrics", {}),
-            "max_iter": self.max_iter,
-            "width": img.shape[1],
-            "height": img.shape[0],
-            "colormap": self.colormap,
-            "timestamp": datetime.now().isoformat(),
         }
 
         with open(fname.with_suffix(".json"), "w") as f:

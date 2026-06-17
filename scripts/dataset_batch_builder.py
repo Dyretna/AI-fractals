@@ -5,23 +5,25 @@ from ai_fractals.data import CURATED_COLORMAPS, FractalDatasetBuilder
 
 
 def dataset_batch_builder(colormaps):
-    for colormap in colormaps:
-        for max_iter in [
-            1024,
-            # 2048
-        ]:
+    for max_iter in [
+        256,
+        512,
+        1024,
+        # 2048
+    ]:
+        for colormap in colormaps:
             # Build dataset
             builder = FractalDatasetBuilder(
                 fractal_type="mandelbrot",
                 width=1024,
                 height=1024,
                 max_iter=max_iter,
-                save_max_depth=15,
+                save_max_depth=10,
                 colormap=colormap,
             )
 
             print("\n", builder, "\n")
-            builder.run(14)
+            builder.run(9)
 
 
 if __name__ == "__main__":
