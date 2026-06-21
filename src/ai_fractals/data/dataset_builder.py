@@ -1,17 +1,15 @@
-import json
 import logging
 import os
-import random
 from datetime import datetime
 from pathlib import Path
 
-import cv2
-import numpy as np
 import torch
 from dotenv import load_dotenv
 from tqdm import tqdm
 
 from ai_fractals.analysis import FractalQualityEvaluator
+from ai_fractals.data.savers import RGBSaver
+from ai_fractals.data.tile_search import TileSearch
 from ai_fractals.generators import (
     BaseFractalGenerator,
     create_fractal_state,
@@ -34,7 +32,7 @@ class FractalDatasetBuilder:
         width: int = 1024,
         height: int = 1024,
         max_iter: int = 1024,
-        tile_resolution: int = 200,
+        tile_resolution: int = 256,
         quality_threshold: float = 0.1,
         n_tiles: int = 5,
         colormap: str = "twilight_shifted",
@@ -45,6 +43,7 @@ class FractalDatasetBuilder:
         self.fractal_type = fractal_type
         self.state = create_fractal_state(self.fractal_type)
 
+        # rendering config
         self.width = width
         self.height = height
         self.save_min_depth = save_min_depth
@@ -53,17 +52,27 @@ class FractalDatasetBuilder:
         self.n_tiles = n_tiles
         self.colormap = colormap
 
-        # Generators and evaluator
-        self.tile_gen: BaseFractalGenerator = create_generator(
-            fractal_type=self.fractal_type,
-            width=tile_resolution,
-            height=tile_resolution,
-            max_iter=max_iter,
-            colormap=colormap,
-            log_level=log_level,
-            use_supersampling=False,
-            state=self.state,
+        # evaluator
+        self.evaluator = FractalQualityEvaluator(quality_threshold)
+
+        # tile-search generator
+        self.tile_search = TileSearch(
+            tile_gen=create_generator(
+                fractal_type=self.fractal_type,
+                width=tile_resolution,
+                height=tile_resolution,
+                max_iter=max_iter,
+                colormap=colormap,
+                log_level=log_level,
+                use_supersampling=False,
+                state=self.state,
+            ),
+            evaluator=self.evaluator,
+            n_tiles=self.n_tiles,
+            top_k=3,
         )
+
+        # high-res generator
         self.hires_gen: BaseFractalGenerator = create_generator(
             fractal_type=self.fractal_type,
             width=self.width,
@@ -75,13 +84,11 @@ class FractalDatasetBuilder:
             state=self.state,
         )
 
-        self.evaluator = FractalQualityEvaluator(quality_threshold)
-
-        # Bounds
+        # Bounds + depth
         self.bounds = get_default_bounds(self.fractal_type, self.state)
         self.depth = 0
 
-        # stuck detection
+        # fallback detection
         self.consecutive_fallbacks = 0
         self.max_fallbacks = 10
 
@@ -89,7 +96,7 @@ class FractalDatasetBuilder:
         self.has_cuda = torch.cuda.is_available()
         self.device = torch.device("cuda") if self.has_cuda else torch.device("cpu")
 
-        # set Output path
+        # output directory
         load_dotenv()
         project_root = Path(os.getenv("PROJECT_ROOT"))
         if output_dir:
@@ -97,11 +104,19 @@ class FractalDatasetBuilder:
         else:
             self.output_dir = Path(
                 project_root
+                / "fractals"
                 / "dataset"
                 / fractal_type
                 / f"{width}_{height}_iter{max_iter}"
             ).resolve()
         self.output_dir.mkdir(parents=True, exist_ok=True)
+
+        self.saver = RGBSaver(
+            output_dir=self.output_dir,
+            fractal_type=self.fractal_type,
+            colormap=self.colormap,
+            max_iter=self.max_iter,
+        )
 
         # logging
         self.log = get_logger(__name__, level=log_level)
@@ -143,17 +158,8 @@ class FractalDatasetBuilder:
         # lower thres at starting point, for more variety
         self.evaluator.quality_threshold = 0.12 if self.depth == 0 else 0.3
 
-        # create tiled candidates for further depth search
-        # Random choice, since best metrics is not necessarily most interesting
-        # Fallback if no tile is over threshold: pick 1 random of top 3
-        tiles = self._tile_and_score(*self.bounds)
-        candidates = [t for t in tiles if t["accept"]]
-        pool = (
-            candidates
-            if candidates
-            else sorted(tiles, key=lambda t: t["score"], reverse=True)[:3]
-        )
-        chosen = random.choice(pool)
+        # tile-search via strategy
+        chosen = self.tile_search.run(self.bounds)
 
         if chosen["accept"]:
             self.consecutive_fallbacks = 0
@@ -173,7 +179,7 @@ class FractalDatasetBuilder:
             chosen["accept"]
             and self.save_min_depth <= self.depth <= self.save_max_depth
         ):
-            self._save_with_metadata(hires, chosen)
+            self._save(hires, chosen)
 
             # reset when reaching max depth
             if self.depth == self.save_max_depth:
@@ -188,65 +194,32 @@ class FractalDatasetBuilder:
         self.depth = 0
         self.consecutive_fallbacks = 0
 
-    # --------------------------------------------------------------------------
-    # Tile search
-    # --------------------------------------------------------------------------
-
-    def _tile_and_score(self, xmin, xmax, ymin, ymax):
-        xs = np.linspace(xmin, xmax, self.n_tiles + 1)
-        ys = np.linspace(ymin, ymax, self.n_tiles + 1)
-
-        tiles = []
-
-        for row in range(self.n_tiles):
-            for col in range(self.n_tiles):
-                bounds = (xs[col], xs[col + 1], ys[row], ys[row + 1])
-                raw = self.tile_gen.generate_raw(*bounds)
-                score, accept, metrics = self.evaluator.evaluate(raw)
-
-                tiles.append(
-                    {
-                        "bounds": bounds,
-                        "score": score,
-                        "accept": accept,
-                        "metrics": metrics,
-                    }
-                )
-
-        return tiles
-
     # ---------------------------------------------------------------------------
     # Saving
     # ---------------------------------------------------------------------------
 
-    def _save_with_metadata(self, img, chosen):
+    def _save(self, img, chosen):
+        # timestamp + compact ID
         ts = datetime.now().isoformat()
         cid = datetime.fromisoformat(ts).strftime("%y%m%d%H%M%S")
 
-        img_type = ".png"
-        fname = self.output_dir / (
-            f"{cid}_{self.colormap}_iter{self.max_iter}_d{self.depth:02d}"
-        )
-        cv2.imwrite(
-            str(fname.with_suffix(img_type)), cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-        )
+        # build filename root
+        root = f"{cid}_{self.colormap}_iter{self.max_iter}"
+        name = self.output_dir / f"{root}_d{self.depth:02d}"
 
-        meta = {
-            "timestamp": ts,
-            "compact_id": cid,
-            "fractal_type": self.fractal_type,
-            "colormap": self.colormap,
-            "max_iter": self.max_iter,
-            "width": img.shape[1],
-            "height": img.shape[0],
-            "depth": self.depth,
-            "bounds": chosen["bounds"],
-            "score": chosen["score"],
-            "metrics": chosen.get("metrics", {}),
-        }
+        # save image
+        self.saver.save_img(img, name)
 
-        with open(fname.with_suffix(".json"), "w") as f:
-            json.dump(meta, f, indent=2)
+        # save metadata
+        self.saver.save_metadata(
+            name=name,
+            resolution=f"({self.width}, {self.height})",
+            bounds=chosen["bounds"],
+            score=chosen["score"],
+            metrics=chosen.get("metrics", {}),
+            ts=ts,
+            cid=cid,
+        )
 
     # --------------------------------------------------------------------------
     # Helpers
@@ -269,25 +242,27 @@ class FractalDatasetBuilder:
     # --------------------------------------------------------------------------
 
     def __repr__(self):
-        rows = []
-        rows.append(f"{self.__class__.__name__}")
-        rows.append(f"Device: {self.device}")
-        rows.append(f"fractal_type={self.fractal_type}")
-        rows.append(f"save_min_depth={self.save_min_depth}")
-        rows.append(f"save_max_depth={self.save_max_depth}")
-        rows.append(f"max_iter={self.max_iter}")
-        rows.append(f"n_tiles={self.n_tiles}")
-        rows.append(f"colormap={self.colormap}")
-        rows.append(f"output_dir='{self.output_dir}'")
-        return "\n  ".join(rows)
+        rows = [
+            f"{self.__class__.__name__}",
+            f"Device={self.device}",
+            f"fractal_type={self.fractal_type}",
+            f"save_min_depth={self.save_min_depth}",
+            f"save_max_depth={self.save_max_depth}",
+            f"max_iter={self.max_iter}",
+            f"n_tiles={self.n_tiles}",
+            f"colormap={self.colormap}",
+            f"output_dir='{self.output_dir}'",
+        ]
+        return "\n".join(rows)
 
     def __str__(self):
-        rows = []
-        rows.append(f"{self.__class__.__name__}")
-        rows.append(f"Device:       {self.device}")
-        rows.append(f"fractal_type: {self.fractal_type}")
-        rows.append(f"resolution:   {self.width}_{self.height}")
-        rows.append(f"max_iter:     {self.max_iter}")
-        rows.append(f"colormap:     {self.colormap}")
-        rows.append(f"output_dir:   {self.output_dir}")
-        return "\n  ".join(rows)
+        rows = [
+            f"{self.__class__.__name__}",
+            f"Device:       {self.device}",
+            f"fractal_type: {self.fractal_type}",
+            f"resolution:   {self.width}_{self.height}",
+            f"max_iter:     {self.max_iter}",
+            f"colormap:     {self.colormap}",
+            f"output_dir:   {self.output_dir}",
+        ]
+        return "\n".join(rows)

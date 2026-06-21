@@ -1,6 +1,5 @@
+# scripts/filter_dataset.py
 """
-dataset_filter_manager.py
-
 General-purpose image filtering manager for fractal datasets.
 
 This class is intended to be used *before* dataset registration.
@@ -19,11 +18,17 @@ Typical pipeline:
     1. Generate raw PNG + JSON files with the dataset builder
     2. Run ImageFilterManager to remove unwanted images
     3. Run Dataset Registry Manager to assign IDs and build CSV
+
 """
 
 import json
+import os
 import shutil
 from pathlib import Path
+
+from dotenv import load_dotenv
+
+from ai_fractals.data import OUT_FILTERED
 
 
 class DatasetFilterManager:
@@ -114,3 +119,25 @@ class DatasetFilterManager:
             return meta["score"] < threshold
 
         self.move_if(out_dir, pred)
+
+
+if __name__ == "__main__":
+    load_dotenv()
+    PROJECT_ROOT = Path(os.getenv("PROJECT_ROOT"))
+
+    if not PROJECT_ROOT.is_dir():
+        raise IsADirectoryError("check PROJECT_ROOT in .env")
+
+    # Input/output directories
+    img_dir = PROJECT_ROOT / "dataset" / "mandelbrot" / "1024_1024_iter1024"
+    out_dir = PROJECT_ROOT / "dataset" / "out" / "1024_1024_iter1024"
+
+    # Create filter manager
+    mgr = DatasetFilterManager(img_dir)
+
+    # Example: remove unwanted colormaps
+    mgr.remove_cmaps(out_dir, OUT_FILTERED)
+    mgr.remove_depth_range(out_dir, 11, 15)
+    # mgr.remove_low_score(threshold=0.15)
+
+    print("Filtering complete.")

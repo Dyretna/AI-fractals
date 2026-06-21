@@ -9,8 +9,9 @@ from .colors import (
     TWO_COLOR_GRADIENTS,
 )
 from .dataset_builder import FractalDatasetBuilder
-from .dataset_filter_manager import DatasetFilterManager
-from .dataset_registry import DatasetRegistryManager
+from .savers import BaseSaver, RGBSaver, ShorelineSaver
+from .shoreline_builder import ShorelineDatasetBuilder
+from .tile_search import TileSearch
 
 __all__ = [
     # colormap constants
@@ -26,4 +27,12 @@ __all__ = [
     "FractalDatasetBuilder",
     "DatasetFilterManager",
     "DatasetRegistryManager",
+    # shoreline
+    "ShorelineDatasetBuilder",
+    # savers
+    "BaseSaver",
+    "RGBSaver",
+    "ShorelineSaver",
+    # tilesearch
+    "TileSearch",
 ]

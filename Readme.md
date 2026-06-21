@@ -1,6 +1,6 @@
 # AI-Fractals
 
-![image](example_images/d09_0.11673_-0.62989_twilight.png)
+![image](example_images/conventional_fractals/YlGnBu_01.png)
 
 ## Overview
 
@@ -8,17 +8,62 @@ This project explores the intersection of artificial intelligence and fractal ge
 
 The project is inspired by research from **Douglas C. Youvan** (doug@youvan.com), detailed in the paper [AI-Enhanced Fractal Geometry: Merging Machine Learning with Traditional Fractal Mathematics](docs/ai-enhanced-fractal-geometry.md).
 
+AI-Fractals provides:
+
+1. A **fractal generation library** (`ai_fractals/`)
+2. A **dataset pipeline** for generating large-scale RGB and shoreline datasets
+3. Tools for **CNN-based embedding learning** from fractal shorelines (in progress)
+4. Infrastructure for **GAN-based pseudo-fractal generation** (in progress)
+
 ## project Status (June 2026)
 
 Completed:
 - **Automatic Fractal Generation**: Generate Mandelbrot and Julia set fractals with configurable parameters
-- **Shoreline Extraction**: Extract and analyze fractal shoreline patterns from generated fractals
-- **CUDA acceleration**: CPU-based fractal generation is slow for large datasets. Future versions will use PyTorch tensors on CUDA to parallelize escape-time iteration and dramatically speed up fractal generation. Also see https://github.com/TomLemsky/pytorch-fractals?tab=readme-ov-file
+- **Shoreline Extraction**:
+    - Extract and analyze fractal shoreline patterns from generated fractals, or
+    - create Shorelines from scratch in big batches
+- **CUDA acceleration**: Both in conventional generation and in GANs training. Also see https://github.com/TomLemsky/pytorch-fractals?tab=readme-ov-file
 - **Supersampling techniques**: upsampling -> downsampling -> gaussian blur, for smoother fractals
 
 In Progress:
 - **AI Training**: Train neural networks (CNNs, GANs) on fractal datasets to generate pseudo-fractals
-- **Julia Set**: Initial infrastructure for Julia set generation is implemented (GPU/CPU backends, parameter handling, tile‑search integration). However, Julia sets are extremely sensitive to the choice of the complex parameter c, and the current sampling strategy is only preliminary.
+- **Julia Set**: Initial infrastructure for Julia set generation is implemented (GPU/CPU backends, parameter handling, tile‑search integration).
+
+
+## Directory Structure
+```
+.
+├── docs/
+├── dataset/                        # training data - default output of dataset_builder (too big to store on GH)
+├── example_images/                 # So far, only regularly generated (no CNN / GANs, yet)
+├── notebooks/                      # demos, prototyping
+├── scripts/
+│   ├── cli_dataset_builder.py      # for creating the training-dataset (usage, see below)
+│   ├── etc...
+│   └── readme.md                   # please check folders readme for a rundown on all scripts..
+└── src/
+    └── ai_fractals/
+        ├── analysis                # module for evaluating fractals (used for both generating and training)
+        ├── data                    # dataset and shoreline builders
+        ├── generators              # the fractal generators (Mandelbrot, Julia, etc)
+        ├── processing              # for processing, edge-detection, filters, flipping images
+        └── training                # for training CNNs, VAEs and GANs
+```
+
+## Typical Workflow
+
+1. Explore conventional fractal generation using the CLI:
+       python scripts/cli_dataset_builder.py
+
+2. Generate RGB datasets:
+       python scripts/batch_builders/dataset_batch_builder.py
+
+3. Generate shoreline datasets (recommended for CNN training):
+       python scripts/batch_builders/shorelines_batch_builder.py
+
+4. Train a CNN on shoreline images to obtain geometry-based embeddings (future work).
+
+5. Use these embeddings to condition or guide GAN models (future work).
 
 
 ## Installation
@@ -55,22 +100,6 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu132
 ```
 CPU works, but is much slower.
 
-
-## Directory Structure
-```
-.
-├── docs/
-├── dataset/                        # training data - default output of dataset_builder (too big to store on GH)
-├── example_images/                 # So far, only regularly generated (no CNN / GANs, yet)
-├── notebooks/                      # demos, prototyping
-├── scripts/
-│   └── cli_dataset_builder.py      # for creating the training-dataset (usage, see below)
-└── src/
-    └── ai_fractals/
-        ├── analysis                # module for evaluating fractals (used for both generating and CNN / Gans training)
-        ├── data                    # dataset_builder and shoreline_extractor
-        └── generators              # the fractal generators (Mandelbrot, Julia)
-```
 
 ## CLI Usage
 The project includes a command-line runner for generating fractal datasets:
