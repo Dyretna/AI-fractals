@@ -46,8 +46,9 @@ In Progress:
         ├── analysis                # module for evaluating fractals (used for both generating and training)
         ├── data                    # dataset and shoreline builders
         ├── generators              # the fractal generators (Mandelbrot, Julia, etc)
+        ├── models                  # models (CNN, VAEs and GANs)
         ├── processing              # for processing, edge-detection, filters, flipping images
-        └── training                # for training CNNs, VAEs and GANs
+        └── training                # for training ai-models
 ```
 
 ## Typical Workflow
@@ -77,8 +78,27 @@ Clone and install:
 git clone https://github.com/Dyretna/AI-fractals.git
 cd AI-fractals
 
-# Install dependencies
+# Install package
 pip install -e .
+```
+Depending on your hardware, install the appropriate PyTorch build.
+I personally run CUDA, so I only guarantee that configuration.
+
+### CUDA (Nvidia GPU)
+```bash
+# install Pytorch with CUDA
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+```
+### CPU-only (NO GPU required)
+```bash
+# Install PyTorch - CPU‑only
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+```
+
+### ROCm (AMD GPU)
+```bash
+# Install PyTorch (ROCm)
+pip install torch torchvision --index-url https://download.pytorch.org/whl/rocm6.0
 ```
 
 ### Set environment paths with python-dotenv
@@ -90,15 +110,6 @@ PROJECT_ROOT=/path/to/AI-fractals
 ```
 
 Then all paths will load correctly.
-
-
-### CUDA (GPU acceleration)
-This project uses pytorch with CUDA-support for fast generation of fractals. Install the CUDA-version of PyTorch manually:
-
-```
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu132
-```
-CPU works, but is much slower.
 
 
 ## CLI Usage
