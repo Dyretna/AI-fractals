@@ -82,7 +82,7 @@ cd AI-fractals
 pip install -e .
 ```
 Depending on your hardware, install the appropriate PyTorch build.
-I personally run CUDA, so I only guarantee that configuration.
+
 
 ### CUDA (Nvidia GPU)
 ```bash
@@ -95,11 +95,6 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 ```
 
-### ROCm (AMD GPU)
-```bash
-# Install PyTorch (ROCm)
-pip install torch torchvision --index-url https://download.pytorch.org/whl/rocm6.0
-```
 
 ### Set environment paths with python-dotenv
 This repo makes use of load_dotenv() from python-dotenv.
