@@ -2,7 +2,6 @@
 """
 General-purpose image filtering manager for fractal datasets.
 
-This class is intended to be used *before* dataset registration.
 It supports removing images based on:
 
     - colormap
@@ -13,12 +12,6 @@ It supports removing images based on:
 
 If ID prefixes are present (<id>_<cmap>_iter...), the manager can
 automatically strip them before applying filters.
-
-Typical pipeline:
-    1. Generate raw PNG + JSON files with the dataset builder
-    2. Run ImageFilterManager to remove unwanted images
-    3. Run Dataset Registry Manager to assign IDs and build CSV
-
 """
 
 import json

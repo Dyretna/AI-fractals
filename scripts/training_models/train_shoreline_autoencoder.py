@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 
 from ai_fractals.data.shoreline_dataset import ShorelineDataset
 from ai_fractals.logging_config import get_logger
-from ai_fractals.models.cnn_autoencoder import CNNAutoencoder
+from ai_fractals.models.autoencoder import AutoEncoder
 from ai_fractals.training import AutoencoderTrainer, EarlyStopping
 
 
@@ -33,7 +33,7 @@ def main(dataset_path: Path, models_path: Path):
     loader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=4)
 
     # --- model ---
-    model = CNNAutoencoder()
+    model = AutoEncoder()
 
     # --- early stopping
     early_stopping = EarlyStopping(

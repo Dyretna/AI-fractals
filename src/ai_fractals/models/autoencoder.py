@@ -1,14 +1,14 @@
 """
-ai_fractals/models/cnn_autoencoder.py
+ai_fractals/models/autoencoder.py
 
-Defines the cnn autoencoder used for learning geometry-based embeddings
+Defines the AutoEncoder (AE) used for learning geometry-based embeddings
 from shoreline images.
 """
 
 import torch.nn as nn
 
 
-class CNNAutoencoder(nn.Module):
+class AutoEncoder(nn.Module):
     def __init__(self):
         super().__init__()
 
@@ -44,7 +44,7 @@ class CNNAutoencoder(nn.Module):
 
     def __str__(self):
         rows = [
-            "CNNAutoencoder",
+            "AutoEncoder",
             f"  encoder_layers: {len(self.encoder)}",
             f"  decoder_layers: {len(self.decoder)}",
             "  embedding_shape: 256x16x16",

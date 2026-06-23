@@ -1,10 +1,59 @@
-# Pretrained Models
+## Model Overview
+
+This directory contains the trained models used throughout the fractal learning pipeline. The models stored here are not the final generative models (such as GANs), but the *representation-learning* models that make the generative stage possible.
+
+Fractal RGB images contain a large amount of color variation that does not reflect the underlying mathematical structure. Different colormaps, gradients, and rendering styles make the images visually appealing, but they obscure the true geometry. To learn the actual fractal shape, the system uses *shoreline images*—grayscale edge maps extracted from the raw iteration data. These shorelines provide a clean, stable, and color‑invariant representation of the fractal’s geometry.
+
+The models in this directory (autoencoders and VAEs) are trained on these shoreline images. Their purpose is to learn a meaningful latent space of fractal geometry: spirals, bulbs, filaments, valleys, and other characteristic structures. This latent space is later used for:
+
+- generating embeddings for clustering and labeling
+- conditioning generative models such as GANs
+- analyzing and comparing fractal shapes
+- exploring the structure of the fractal manifold
+
+These models do **not** generate RGB fractals themselves. Instead, they provide the geometric understanding that allows a GAN to later generate full‑color fractal images with consistent structure.
+
+The dataset used to train these models is not included in the repository, as it contains tens of thousands of images and is far too large to distribute. Users must generate their own dataset using `/scripts`.
 
 
-## shoreline Autoencoder
+## Pretrained Models
+
+
+### shoreline Autoencoder
 This directory contains the pretrained **shoreline autoencoder** used in this project.
 
-The model is small (4.1 MB) and included here so you can immediately generate
-embeddings without training their own autoencoder.
+The model is small (4.1 MB) and included here so you can immediately generate embeddings without training their own autoencoder.
 
 If you prefer to train your own model, you first need to generate your own shoreline dataset
+
+### Self-Supervised CNN (SimCLR-style)
+
+This directory contains the pretrained **self-supervised CNN** used to learn
+geometry-based embeddings from shoreline images. Unlike the autoencoder, which
+reconstructs images, this model is trained using a SimCLR-style contrastive
+objective. The network learns to produce similar embeddings for two augmented
+versions of the same shoreline, and dissimilar embeddings for different
+shorelines.
+
+This training strategy forces the model to learn *robust, invariant geometric
+features* that remain stable under perturbations such as cropping, flipping,
+rotation, and noise. For fractal shorelines, this is particularly effective:
+the model learns to represent global structure (spirals, bulbs, filaments,
+valleys) rather than pixel-level details.
+
+The resulting embeddings are used for:
+
+- unsupervised clustering of fractal shapes
+- generating automatic fractal labels for conditional GANs
+- similarity search and nearest-neighbor exploration
+- analyzing the structure of the fractal manifold
+- downstream tasks that require geometry-aware features
+
+The self-supervised CNN does **not** generate images. Instead, it provides a
+high-quality embedding space that captures the intrinsic geometry of fractal
+shorelines. This embedding space is a key component of the generative pipeline,
+as it enables GANs to produce fractals with consistent and controllable
+structure.
+
+A pretrained model is included so users can immediately compute embeddings
+without running the full contrastive training process.
