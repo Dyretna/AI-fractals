@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 import argparse
-import logging
 import os
 from pathlib import Path
 
 from dotenv import load_dotenv
 from matplotlib import colormaps
 
-from ai_fractals.data.dataset_builder import FractalDatasetBuilder
+from ai_fractals.data import RGBDatasetBuilder
 
 
 def main():
@@ -26,9 +25,6 @@ def main():
 Examples:
     Generate 50 Mandelbrot images in 4K:
         python cli_dataset_builder.py --n 50 --type mandelbrot --width 3840 --height 2160
-
-    Generate Julia set images with a custom colormap:
-        python cli_dataset_builder.py --type julia --cmap plasma
 
     Save output to a custom directory:
         python cli_dataset_builder.py --out /tmp/fractals
@@ -108,17 +104,13 @@ Examples:
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Logging level
-    log_level = logging.INFO if args.verbose else logging.WARNING
-
     # Build dataset
-    builder = FractalDatasetBuilder(
+    builder = RGBDatasetBuilder(
         fractal_type=args.type,
         width=args.width,
         height=args.height,
         max_iter=args.max_iter,
         colormap=args.cmap,
-        log_level=log_level,
         output_dir=output_dir,
     )
 

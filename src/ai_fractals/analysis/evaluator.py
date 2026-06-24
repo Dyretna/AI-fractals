@@ -19,6 +19,7 @@ from typing import Dict, Tuple
 import cv2
 import numpy as np
 
+from ..processing import EdgeDetector
 from .complexity_measures import calculate_entropy, entropy_score
 from .fractal_dimension import fractal_dimension, fractal_dimension_score
 from .statistical_properties import analyze_statistical_properties, variance_score
@@ -27,12 +28,14 @@ from .statistical_properties import analyze_statistical_properties, variance_sco
 class FractalQualityEvaluator:
     def __init__(
         self,
+        detector: EdgeDetector,
         quality_threshold: float = 0.3,
         min_edge_ratio: float = 0.03,
         max_edge_ratio: float = 0.45,
         min_inside_ratio: float = 0.0001,
         max_inside_ratio: float = 0.9999,
     ):
+        self.detector = detector
         self.quality_threshold = quality_threshold
         self.min_edge_ratio = min_edge_ratio
         self.max_edge_ratio = max_edge_ratio
@@ -51,9 +54,7 @@ class FractalQualityEvaluator:
         return image
 
     def edge_density(self, image: np.ndarray) -> float:
-        gray = self._to_gray(image)
-        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        edges = cv2.Canny(blurred, 50, 150)
+        edges = self.detector.detect(image)
         return float(np.sum(edges > 0) / edges.size)
 
     def _edge_score(self, density: float) -> float:
@@ -97,3 +98,20 @@ class FractalQualityEvaluator:
         }
 
         return float(score), score >= self.quality_threshold, metrics
+
+    def __str__(self):
+        rows = [f"{self.__class__.__name__}:"]
+        for k, v in self.__dict__.items():
+            if k.startswith("_"):
+                continue
+            if callable(v):
+                continue
+
+            if isinstance(v, (int, float, str, bool)):
+                val = v
+            else:
+                val = type(v).__name__
+
+            rows.append(f"  {k}: {val}")
+
+        return "\n".join(rows)

@@ -231,17 +231,34 @@ CUSTOM_OUT = [
     "cividis",
     "viridis",
     # reversed
-    "hot_rgist_heat_r",
+    "hot_r",
+    "gist_heat_r",
     "cividis_r",
     "viridis_r",
 ]
 
 # Combine all redundant
-OUT_FILTERED = [
+OUT_FILTERED_RGB = [
     *GREYS,
     *SINGLE_COLOR_GRADIENTS,
     *TWO_COLOR_GRADIENTS,
     *CUSTOM_OUT,
 ]
 
-CURATED_COLORMAPS = [c for c in list(colormaps) if c not in OUT_FILTERED]
+OUT_FILTERED_SHORELINES = [
+    *GREYS,
+    *SINGLE_COLOR_GRADIENTS,
+    *TWO_COLOR_GRADIENTS,
+    *THREE_COLOR_GRADIENTS,
+    *CUSTOM_OUT,
+]
+
+CURATED_COLORMAPS = [c for c in list(colormaps) if c not in OUT_FILTERED_RGB]
+CURATED_SHORELINE_COLORMAPS = [
+    c for c in list(CURATED_COLORMAPS) if c not in OUT_FILTERED_SHORELINES
+]
+
+
+if __name__ == "__main__":
+    print("\n Curated colormaps: ", CURATED_COLORMAPS)
+    print("\n Curated Shoreline colormaps: ", CURATED_SHORELINE_COLORMAPS)

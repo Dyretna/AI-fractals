@@ -1,17 +1,19 @@
 from .colors import (
     CURATED_COLORMAPS,
+    CURATED_SHORELINE_COLORMAPS,
     DISCRETE_GRADIENTS,
     GREYS,
-    OUT_FILTERED,
     SINGLE_COLOR_GRADIENTS,
     THEMED,
     THREE_COLOR_GRADIENTS,
     TWO_COLOR_GRADIENTS,
 )
-from .dataset_builder import FractalDatasetBuilder
+from .dataset_builders import (
+    BaseDatasetBuilder,
+    RGBDatasetBuilder,
+    ShorelineDatasetBuilder,
+)
 from .savers import BaseSaver, RGBSaver, ShorelineSaver
-from .shoreline_builder import ShorelineDatasetBuilder
-from .tile_search import TileSearch
 
 __all__ = [
     # colormap constants
@@ -21,18 +23,15 @@ __all__ = [
     "THREE_COLOR_GRADIENTS",
     "THEMED",
     "DISCRETE_GRADIENTS",
-    "OUT_FILTERED",
     "CURATED_COLORMAPS",
-    # dataset helpers
+    "CURATED_SHORELINE_COLORMAPS",
     "FractalDatasetBuilder",
-    "DatasetFilterManager",
-    "DatasetRegistryManager",
-    # shoreline
+    # builders
+    "BaseDatasetBuilder",
+    "RGBDatasetBuilder",
     "ShorelineDatasetBuilder",
     # savers
     "BaseSaver",
     "RGBSaver",
     "ShorelineSaver",
-    # tilesearch
-    "TileSearch",
 ]

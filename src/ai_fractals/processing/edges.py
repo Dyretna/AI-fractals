@@ -99,27 +99,19 @@ class EdgeDetector:
 
         return edges
 
-    def __str__(self) -> str:
-        """Return detailed edge detector configuration."""
-        rows = [
-            "--- Edge Detection (Canny) ---",
-            f"Canny threshold low: {self.canny_low}",
-            f"Canny threshold high: {self.canny_high}",
-        ]
-        if self.apply_smoothing and self.smoother is not None:
-            rows.append(f"Smoothing: {self.smoother.method}")
-            rows.append(f"Kernel size: {self.smoother.kernel_size}")
-            if self.smoother.sigma > 0:
-                rows.append(f"Sigma: {self.smoother.sigma}")
-        else:
-            rows.append("Smoothing: disabled")
+    def __str__(self):
+        rows = [f"{self.__class__.__name__}:"]
+        for k, v in self.__dict__.items():
+            if k.startswith("_"):
+                continue
+            if callable(v):
+                continue
+
+            if isinstance(v, (int, float, str, bool)):
+                val = v
+            else:
+                val = type(v).__name__
+
+            rows.append(f"  {k}: {val}")
 
         return "\n".join(rows)
-
-    def __repr__(self) -> str:
-        smooth_info = (
-            f", smoothing={self.smoother.method}"
-            if self.apply_smoothing
-            else ", no_smoothing"
-        )
-        return f"EdgeDetector(canny=({self.canny_low}, {self.canny_high}){smooth_info})"

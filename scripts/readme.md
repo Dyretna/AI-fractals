@@ -13,14 +13,13 @@ for running large batch jobs, fixing datasets, or performing one-off tasks.
 ## Directory Structure
 ```
 scripts/
-├── batch_builders/
-│   ├── dataset_batch_builder.py
-│   └── shorelines_batch_builder.py
+├── batch_generation/
+│   ├── batch_dataset_generation.py
+│   └── batch_dataset_generation.py
 ├── filters_and_fixers/
 │   ├── fix_images_in_dataset.py
 │   └── remove_from_dataset.py
-├── cli_dataset_builder.py
-├── register_to_csv.py
+├── cli_dataset_generation.py
 └── shorelines_from_img.py
 ```
 
@@ -28,7 +27,7 @@ scripts/
 
 ## CLI Tools
 
-### cli_dataset_builder.py
+### cli_dataset_generation.py
 A simple command-line interface for generating fractal datasets without
 writing Python code. This script is intended as an entry point for exploring
 automatically generated fractals and understanding the dataset-building
@@ -46,7 +45,7 @@ Example:
 
 ## Batch Builders
 
-### dataset_batch_builder.py
+### batch_dataset_generation.py
 Generates large batches of high-resolution RGB fractal images using the
 FractalDatasetBuilder. Iterates over curated colormaps and iteration counts.
 Used for building the main fractal dataset.
@@ -54,7 +53,7 @@ Used for building the main fractal dataset.
 This is the conventional fractal generator: it produces full-color fractal
 renders that can be inspected visually or used as a reference dataset.
 
-### shorelines_batch_builder.py
+### batch_shoreline_generation.py
 Batch shoreline generation using ShorelineDatasetBuilder. This builder
 creates shorelines **from scratch**, without loading any images from disk.
 

@@ -112,11 +112,11 @@ The project includes a command-line runner for generating fractal datasets:
 
 Basic usage (default: 50 Mandelbrot images):
 
-    python scripts/cli_dataset_builder.py
+    python scripts/cli_dataset_generation.py
 
 High-resolution output:
 
-    python scripts/cli_dataset_builder.py \
+    python scripts/cli_dataset_generation.py \
         --width 2048 \
         --height 2048 \
         --max_iter 1500

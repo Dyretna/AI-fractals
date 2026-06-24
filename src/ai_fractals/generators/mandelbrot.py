@@ -6,10 +6,15 @@ from .base import BaseFractalGenerator
 
 
 class MandelbrotCPU(BaseFractalGenerator):
+    fractal_type = "mandelbrot"
+
+    def default_bounds(self) -> tuple[float, float, float, float]:
+        return (-2.0, 1.0, -1.5, 1.5)
+
     def _compute(
         self, xmin: float, xmax: float, ymin: float, ymax: float
     ) -> np.ndarray:
-        xmin, xmax, ymin, ymax = self.match_aspect(xmin, xmax, ymin, ymax)
+        xmin, xmax, ymin, ymax = self._match_aspect(xmin, xmax, ymin, ymax)
 
         x = np.linspace(xmin, xmax, self.width)
         y = np.linspace(ymin, ymax, self.height)
@@ -27,26 +32,17 @@ class MandelbrotCPU(BaseFractalGenerator):
         img[img == 0] = self.max_iter
         return img
 
-    def generate(
-        self, xmin: float, xmax: float, ymin: float, ymax: float
-    ) -> np.ndarray:
-        img = self.normalize_RGB(self._compute(xmin, xmax, ymin, ymax))
-        if self.use_supersampling:
-            img = self.supersample(img)
-        return img
-
-    def generate_raw(
-        self, xmin: float, xmax: float, ymin: float, ymax: float
-    ) -> np.ndarray:
-        img = self._compute(xmin, xmax, ymin, ymax)
-        return (img / self.max_iter * 255).astype(np.uint8)
-
 
 class MandelbrotGPU(BaseFractalGenerator):
+    fractal_type = "mandelbrot"
+
+    def default_bounds(self) -> tuple[float, float, float, float]:
+        return (-2.0, 1.0, -1.5, 1.5)
+
     def _compute(
         self, xmin: float, xmax: float, ymin: float, ymax: float
     ) -> np.ndarray:
-        xmin, xmax, ymin, ymax = self.match_aspect(xmin, xmax, ymin, ymax)
+        xmin, xmax, ymin, ymax = self._match_aspect(xmin, xmax, ymin, ymax)
 
         # double precision coordinates
         x = torch.linspace(
@@ -71,17 +67,3 @@ class MandelbrotGPU(BaseFractalGenerator):
 
         img[img == 0] = self.max_iter
         return img.cpu().numpy()
-
-    def generate(
-        self, xmin: float, xmax: float, ymin: float, ymax: float
-    ) -> np.ndarray:
-        img = self.normalize_RGB(self._compute(xmin, xmax, ymin, ymax))
-        if self.use_supersampling:
-            img = self.supersample(img)
-        return img
-
-    def generate_raw(
-        self, xmin: float, xmax: float, ymin: float, ymax: float
-    ) -> np.ndarray:
-        img = self._compute(xmin, xmax, ymin, ymax)
-        return (img / self.max_iter * 255).astype(np.uint8)
