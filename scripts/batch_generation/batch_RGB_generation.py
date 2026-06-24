@@ -37,51 +37,56 @@ def main() -> None:
     detector = EdgeDetector(**cfg["detector"])
     evaluator = FractalQualityEvaluator(**cfg["evaluator"], detector=detector)
 
+    num_types = len(cfg["fractal_types"])
+    num_iters = len(cfg["max_iters"])
+    num_cmaps = len(CURATED_COLORMAPS)
+
+    total_combinations = num_types * num_iters * num_cmaps
+    per_cfg_loop = cfg["total_final"] // total_combinations
+
     for fractal_type in cfg["fractal_types"]:
         for max_iter in cfg["max_iters"]:
             for colormap in CURATED_COLORMAPS:
-                per_cfg_loop = cfg["total_final"] // len(cfg["fractal_types"])
+                # low-res generator for tile-search
+                tile_gen: BaseFractalGenerator = create_generator(
+                    fractal_type=fractal_type,
+                    colormap=colormap,
+                    **cfg["tile_gen"],
+                )
 
-        # low-res generator for tile-search
-        tile_gen: BaseFractalGenerator = create_generator(
-            fractal_type=fractal_type,
-            colormap=colormap,
-            **cfg["tile_gen"],
-        )
+                tile_search: BaseTileSearch = TileSearchJittered(
+                    tile_gen=tile_gen, evaluator=evaluator, **cfg["tile"]
+                )
 
-        tile_search: BaseTileSearch = TileSearchJittered(
-            tile_gen=tile_gen, evaluator=evaluator, **cfg["tile"]
-        )
+                # high-res generator for final RGB render
+                hires_generator: BaseFractalGenerator = create_generator(
+                    fractal_type=fractal_type,
+                    colormap=colormap,
+                    max_iter=max_iter,
+                    **cfg["hires_gen"],
+                )
 
-        # high-res generator for final RGB render
-        hires_generator: BaseFractalGenerator = create_generator(
-            fractal_type=fractal_type,
-            colormap=colormap,
-            max_iter=max_iter,
-            **cfg["hires_gen"],
-        )
+                width = cfg["hires_gen"].get("width")
+                height = cfg["hires_gen"].get("height")
+                out_dir = Path(
+                    output_root / fractal_type / f"{width}_{height}_iter{max_iter}_test"
+                )
+                out_dir.mkdir(parents=True, exist_ok=True)
 
-        width = cfg["hires_gen"].get("width")
-        height = cfg["hires_gen"].get("height")
-        out_dir = Path(
-            output_root / fractal_type / f"{width}_{height}_iter{max_iter}_test"
-        )
-        out_dir.mkdir(parents=True, exist_ok=True)
+                builder = RGBDatasetBuilder(
+                    tile_search=tile_search,
+                    hires_generator=hires_generator,
+                    evaluator=evaluator,
+                    output_dir=out_dir,
+                    save_min_depth=cfg["min_depth"],
+                    save_max_depth=cfg["max_depth"],
+                    colormap=colormap,
+                    save_metadata=False,
+                )
 
-        builder = RGBDatasetBuilder(
-            tile_search=tile_search,
-            hires_generator=hires_generator,
-            evaluator=evaluator,
-            output_dir=out_dir,
-            save_min_depth=cfg["min_depth"],
-            save_max_depth=cfg["max_depth"],
-            colormap=colormap,
-            save_metadata=False,
-        )
-
-        print("\n", builder, "\n")
-        builder.run(per_cfg_loop)
-        print(f"Completed batch for {fractal_type}\n")
+                print("\n", builder, "\n")
+                builder.run(per_cfg_loop)
+                print(f"Completed batch for {fractal_type}\n")
 
 
 if __name__ == "__main__":
