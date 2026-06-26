@@ -7,7 +7,7 @@ STRATEGIES = {
 
 
 def format_available_strategies():
-    rows = []
+    rows = ["Available strategies: "]
     for str_key, cls in STRATEGIES.items():
         rows.append(f"{str_key:10} : {cls.__name__}")
     return "    \n".join(rows)
@@ -18,6 +18,5 @@ def create_search_strategy(strategy: str) -> BaseTileSearch:
         return STRATEGIES[strategy]
     except KeyError:
         raise ValueError(
-            f"Unknown strategy '{strategy}', "
-            f"known strategies: \n{format_available_strategies()}"
+            f"Unregistered strategy '{strategy}', {format_available_strategies()}"
         )

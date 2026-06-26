@@ -7,6 +7,13 @@ GENERATOR_TABLE = {
 }
 
 
+def format_available_types():
+    rows = ["Available fractal generator types:"]
+    for str_key, (GPUClass, CPUClass) in GENERATOR_TABLE.items():
+        rows.append(f"{str_key:10} : GPU={GPUClass.__name__}, CPU={CPUClass.__name__}")
+    return "    \n".join(rows)
+
+
 def create_generator(
     fractal_type: str,
     *,
@@ -18,7 +25,10 @@ def create_generator(
     use_gpu: bool = False,
 ):
     if fractal_type not in GENERATOR_TABLE:
-        raise ValueError(f"Unknown fractal type: {fractal_type}")
+        raise ValueError(
+            f"Unregistered fractal generator type '{fractal_type}',"
+            f"{format_available_types()}"
+        )
 
     GPUClass, CPUClass = GENERATOR_TABLE[fractal_type]
 
