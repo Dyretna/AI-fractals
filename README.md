@@ -27,43 +27,37 @@ Completed:
 
 In Progress:
 - **AI Training**: Train neural networks (CNNs, GANs) on fractal datasets to generate pseudo-fractals
-- **Julia Set**: Initial infrastructure for Julia set generation is implemented (GPU/CPU backends, parameter handling, tile‑search integration).
+- **Julia Set genereators**: (GPU/CPU backends, parameter handling, tile‑search integration).
 
 
 ## Directory Structure
 ```
 .
 ├── docs/
-├── dataset/                        # training data - default output of dataset_builder (too big to store on GH)
-├── example_images/                 # So far, only regularly generated (no CNN / GANs, yet)
+├── dataset/                        # generated datasets (not stored in repo)
+├── example_images/                 # Sampled fractals (no GANs, yet)
 ├── notebooks/                      # demos, prototyping
-├── scripts/
-│   ├── cli_dataset_builder.py      # for creating the training-dataset (usage, see below)
-│   ├── etc...
-│   └── readme.md                   # please check folders readme for a rundown on all scripts..
+├── scripts/                        # CLI tools, batch pipelines, utilities
+│   ├── cli_batch_generation.py
+│   ├── cli_simple_fractal_generation.py
+│   └── readme.md
 └── src/
     └── ai_fractals/
-        ├── analysis                # module for evaluating fractals (used for both generating and training)
-        ├── data                    # dataset and shoreline builders
-        ├── generators              # the fractal generators (Mandelbrot, Julia, etc)
-        ├── models                  # models (CNN, VAEs and GANs)
-        ├── processing              # for processing, edge-detection, filters, flipping images
+        ├── analysis                # fractal evaluation and quality metrics
+        ├── data                    # rgb dataset and shoreline builders
+        ├── generators              # Mandelbrot, Julia, etc
+        ├── models                  # CNN, VAEs and GANs architectures
+        ├── processing              # edge-detection, filters, transforms
+        ├── search                  # strategies in dataset generation
         └── training                # for training ai-models
 ```
 
 ## Typical Workflow
 
-1. Explore conventional fractal generation using the CLI:
-       python scripts/cli_dataset_builder.py
-
-2. Generate RGB datasets:
-       python scripts/batch_builders/dataset_batch_builder.py
-
+1. Explore conventional fractal generation using the simple CLI
+2. Generate RGB datasets (batch pipeline)
 3. Generate shoreline datasets (recommended for CNN training):
-       python scripts/batch_builders/shorelines_batch_builder.py
-
-4. Train a CNN on shoreline images to obtain geometry-based embeddings (future work).
-
+4. Train a CNN on shoreline images to obtain geometry-based embeddings. (future work)
 5. Use these embeddings to condition or guide GAN models (future work).
 
 
@@ -108,20 +102,27 @@ Then all paths will load correctly.
 
 
 ## CLI Usage
-The project includes a command-line runner for generating fractal datasets:
+The project includes two command‑line interfaces:
+
+1. **A simple fractal generator CLI** — good for exploration and testing
+2. **A batch CLI** — used for large‑scale dataset generation via YAML
+
+### Simple CLI (quick fractal generation)
 
 Basic usage (default: 50 Mandelbrot images):
 
+```bash
     python scripts/cli_dataset_generation.py
+```
 
-High-resolution output:
+High-resolution example:
 
     python scripts/cli_dataset_generation.py \
         --width 2048 \
         --height 2048 \
         --max_iter 1500
 
-### CLI Arguments
+#### Arguments for simple CLI
     --n          Number of images to generate (default: 50)
     --type       Fractal type: mandelbrot or julia (default: mandelbrot)
     --width      Image width in pixels (default: 1024)
@@ -129,6 +130,39 @@ High-resolution output:
     --max_iter   Maximum iterations for the fractal generator (default: 1024)
     --cmap       Matplotlib colormap name (default: twilight)
     --out        Output directory (default: PROJECT_ROOT/dataset/fractals/<type>)
+
+
+### Batch CLI (YAML‑driven pipelines)
+For large‑scale dataset generation (RGB or shoreline), use:
+
+Generate RGB datasets (batch pipeline)
+```bash
+python scripts/cli_batch_generation.py --config configs/rgb/rgb_cfg.yaml
+```
+
+Generate shoreline datasets (recommended for CNN training):
+```bash
+python scripts/cli_batch_generation.py --config configs/shoreline/shoreline_cfg.yaml
+```
+
+You can also run multiple pipelines in sequence:
+```bash
+python scripts/cli_batch_generation.py --config cfg1.yaml cfg2.yaml cfg3.yaml
+```
+
+Each config file defines:
+
+- job type (`rgb` or `shoreline`)
+- fractal generator parameters
+- fractal search strategy settings
+- resolution, iteration counts, colormap, etc.
+
+For full documentation, see:
+
+```
+scripts/README.md
+```
+
 
 ## Research Background
 

@@ -1,3 +1,5 @@
+job_type: rgb
+
 detector:
   canny_low: 40
   canny_high: 120
@@ -16,30 +18,26 @@ evaluator:
 tile_gen:
   width: 256
   height: 256
-  max_iter: 256
+  max_iter: 1024
   use_supersampling: false
   use_gpu: true
 
 search_strategy: tile_jittered
 search_params:
   n_tiles: 7
-  top_k: 5
+  top_k: 3
   jitter_scale: 0.05
 
 hires_gen:
-  width: 1024
-  height: 1024
+  width: 512
+  height: 512
+  max_iter: 1024
   use_supersampling: true
   use_gpu: true
 
-total_final: 10000
-min_depth: 2
-max_depth: 10
+total_final: 500
+min_depth: 3
+max_depth: 12
 
 fractal_types:
   - mandelbrot
-
-max_iters:
-  - 512
-  - 1024
-  - 2048

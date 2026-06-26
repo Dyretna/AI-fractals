@@ -25,13 +25,9 @@ from ai_fractals.processing import EdgeDetector
 from ai_fractals.search import BaseTileSearch, create_search_strategy
 
 
-def main(cfg_path: Path) -> None:
-    project_root = Path(os.getenv("PROJECT_ROOT", "."))
+def run_shoreline_batch(cfg: dict, project_root: Path) -> None:
     output_root = project_root / "dataset" / "shorelines"
     output_root.mkdir(parents=True, exist_ok=True)
-
-    # load config file
-    cfg = yaml.safe_load(open(cfg_path))
 
     detector = EdgeDetector(**cfg["detector"])
     evaluator = FractalQualityEvaluator(**cfg["evaluator"], detector=detector)
@@ -79,7 +75,9 @@ def main(cfg_path: Path) -> None:
 
 if __name__ == "__main__":
     load_dotenv()
-    project_root = Path(os.getenv("PROJECT_ROOT", "."))
+    project_root = Path(os.getenv("PROJECT_ROOT"))
     yaml_path = project_root / "configs" / "shoreline_jittered_batch.yaml"
 
-    main(yaml_path)
+    cfg = yaml.safe_load(open(yaml_path))
+
+    run_shoreline_batch(cfg, project_root)

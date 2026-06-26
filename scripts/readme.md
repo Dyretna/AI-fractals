@@ -1,12 +1,13 @@
 # Scripts Directory
 
 This directory contains all standalone tools and batch scripts used for
-dataset generation, shoreline extraction, dataset cleanup, and metadata
-export. The structure is organized by purpose to keep the workflow clear
-and modular.
+dataset generation, shoreline extraction, dataset cleanup, and model
+training. These scripts are **not** part of the core `ai_fractals` library.
+They are operational utilities intended for running batch jobs, fixing
+datasets, or performing one‑off tasks.
 
-The scripts are not part of the core library. They are utilities intended
-for running large batch jobs, fixing datasets, or performing one-off tasks.
+The reason is to keep the core library clean and modular while placing all
+pipeline‑level tools here.
 
 --------------------------------------------------------------------------
 
@@ -14,12 +15,12 @@ for running large batch jobs, fixing datasets, or performing one-off tasks.
 ```
 scripts/
 ├── batch_generation/
-│   ├── batch_dataset_generation.py
-│   └── batch_dataset_generation.py
+│   ├── batch_shoreline_generation.py
+│   └── batch_RGB_generation.py
+├── training_models/
 ├── filters_and_fixers/
-│   ├── fix_images_in_dataset.py
-│   └── remove_from_dataset.py
-├── cli_dataset_generation.py
+├── cli_simple_fractal_generation.py
+├── cli_batch_generation.py
 └── shorelines_from_img.py
 ```
 
@@ -27,11 +28,10 @@ scripts/
 
 ## CLI Tools
 
-### cli_dataset_generation.py
-A simple command-line interface for generating fractal datasets without
-writing Python code. This script is intended as an entry point for exploring
-automatically generated fractals and understanding the dataset-building
-workflow.
+### cli_simple_fractal_generation.py
+A lightweight command‑line tool for generating small sets of RGB fractals
+without tile‑search. Useful for experimentation, debugging, and quick
+visualization.
 
 While useful for experimentation, building a full fractal-AI pipeline
 requires large and diverse datasets. For this reason, dedicated batch
@@ -39,42 +39,45 @@ pipelines (dataset_batch_builder.py and shorelines_batch_builder.py) exist
 to generate thousands of samples efficiently.
 
 Example:
-    python cli_dataset_builder.py --type mandelbrot --n 50 --iter 512
+```bash
+python cli_dataset_builder.py --type mandelbrot --n 50 --iter 512
+```
 
---------------------------------------------------------------------------
+---
+
+### cli_batch_generation.py
+The main entry point for running **one or multiple batch pipelines** using
+YAML configuration files.
+
+This CLI:
+- loads one or more YAML configs
+- reads the `job_type` field
+- dispatches to the correct batch builder
+- executes pipelines sequentially
+
+Run a single config:
+```bash
+python cli_batch_generation.py --config configs/rgb/rgb_cfg.yaml
+```
+
+Run multipe configs in a sequence:
+```bash
+python cli_batch_generation.py --config cfg1.yaml cfg2.yaml cfg3.yaml
+```
 
 ## Batch Builders
 
-### batch_dataset_generation.py
-Generates large batches of high-resolution RGB fractal images using the
-FractalDatasetBuilder. Iterates over curated colormaps and iteration counts.
-Used for building the main fractal dataset.
+### batch_RGB_generation.py
+Generates large batches of high‑resolution RGB fractal images. This is the
+standard fractal dataset generator used for building reference datasets or
+training GAN models.
 
-This is the conventional fractal generator: it produces full-color fractal
-renders that can be inspected visually or used as a reference dataset.
 
 ### batch_shoreline_generation.py
-Batch shoreline generation using ShorelineDatasetBuilder. This builder
-creates shorelines **from scratch**, without loading any images from disk.
+Generates shoreline datasets from scratch, without saving intermediate
+RGB images. This is the recommended method for producing training data for
+the self‑supervised CNN that learns geometry‑based embeddings.
 
-It performs:
-- tile-search
-- high-resolution fractal tile generation
-- shoreline extraction
-- quality evaluation
-- augmentation
-- saving
-
-This is the *recommended* way to build large shoreline datasets for
-self-supervised CNN training. It does not require storing thousands of
-large RGB images; instead, it generates the final shoreline images directly
-in the desired resolution.
-
-**Important:** Shorelines are *not* part of the dataset used for training
-GAN models, so paired RGB-and-shoreline samples are unnecessary. Shorelines
-serve a different purpose: they are used to train a CNN that produces
-geometry-based embeddings. These embeddings are later used by the GANs as
-conditioning signals or structural guidance.
 
 ### shorelines_from_img.py
 Builds shorelines **from existing RGB fractal images**.
@@ -93,7 +96,7 @@ renders.
 
 --------------------------------------------------------------------------
 
-## Batch Fixers
+## Filters and Fixers
 
 ### fix_images_in_dataset.py
 Repairs or normalizes datasets where colormap metadata is missing or
@@ -105,12 +108,14 @@ Useful for cleaning large datasets before training.
 
 --------------------------------------------------------------------------
 
-## Metadata Export
+## Training Scripts
 
-### register_to_csv.py
-Scans a dataset directory and exports metadata (bounds, depth, colormap,
-iteration count, timestamps, etc.) into a CSV file for analysis or training
-pipelines.
+### train_self_supervised_cnn.py
+Trains the CNN that produces geometry‑based embeddings from shoreline
+images.
+
+### train_shoreline_autoencoder.py
+Trains the VAE used to learn latent structure in shoreline geometry.
 
 --------------------------------------------------------------------------
 
@@ -126,33 +131,33 @@ pipelines.
 
 ## Typical Workflow
 
-1. Explore fractals using the CLI:
-       python scripts/cli_dataset_builder.py --type mandelbrot --n 20
+1. Explore fractals:
+
+``` bash
+python scripts/cli_dataset_builder.py --type mandelbrot --n 20
+```
 
 2. Generate RGB fractal datasets:
-       python scripts/batch_builders/dataset_batch_builder.py
+```bash
+python scripts/cli_batch_generation.py --config configs/rgb/rgb_cfg.yaml
+```
 
-3. Generate shoreline datasets (recommended for CNN training):
-       python scripts/batch_builders/shorelines_batch_builder.py
+3. Generate shoreline datasets:
+```bash
+python scripts/cli_batch_generation.py --config configs/shoreline/shoreline_cfg.yaml
+```
 
-4. Convert existing images to shorelines (legacy method):
-       python scripts/batch_builders/shorelines_from_img.py
+4. Run multiple pipelines in sequence:
+```bash
+python scripts/cli_batch_generation.py --config cfg1.yaml cfg2.yaml cfg3.yaml
+```
 
-5. Clean or filter datasets:
-       python scripts/filter_and_fixers/remove_from_dataset.py
+5. Clean datasets:
+```bash
+python scripts/filters_and_fixers/remove_from_dataset.py
+```
 
-6. Export metadata:
-       python scripts/register_to_csv.py
-
---------------------------------------------------------------------------
-
-## Purpose
-
-The goal of this directory is to keep all operational scripts in one place,
-separate from the core fractal generation library. This makes it easy to
-run batch jobs, maintain datasets, and automate workflows without mixing
-utility code into the main package.
-
-The batch builders form the backbone of the fractal-AI pipeline, enabling
-the creation of large, diverse datasets required for training models that
-learn fractal geometry and structure.
+Train models:
+```bash
+python scripts/training_models/train_self_supervised_cnn.py
+```

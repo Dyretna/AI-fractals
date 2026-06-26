@@ -1,10 +1,12 @@
+job_type: rgb
+
 detector:
-  canny_low: 50
-  canny_high: 150
+  canny_low: 40
+  canny_high: 120
   apply_smoothing: true
   smoothing_method: gaussian
-  smoothing_kernel: 5
-  smoothing_sigma: 0.0
+  smoothing_kernel: 3
+  smoothing_sigma: 0.8
 
 evaluator:
   quality_threshold: 0.3
@@ -20,10 +22,11 @@ tile_gen:
   use_supersampling: false
   use_gpu: true
 
-search_strategy: tile_basic
+search_strategy: tile_jittered
 search_params:
   n_tiles: 7
-  top_k: 5
+  top_k: 3
+  jitter_scale: 0.05
 
 hires_gen:
   width: 512
@@ -32,11 +35,9 @@ hires_gen:
   use_supersampling: true
   use_gpu: true
 
-total_final: 10000
+total_final: 500
 min_depth: 2
-max_depth: 10
+max_depth: 8
 
 fractal_types:
   - mandelbrot
-
-colormap: twilight_shifted
