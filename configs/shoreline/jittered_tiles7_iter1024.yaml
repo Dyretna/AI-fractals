@@ -18,25 +18,26 @@ evaluator:
 tile_gen:
   width: 256
   height: 256
-  max_iter: 256
+  max_iter: 1024
   use_supersampling: false
   use_gpu: true
 
-search_strategy: tile_basic
+search_strategy: tile_jittered
 search_params:
   n_tiles: 7
-  top_k: 3
+  top_k: 5
+  jitter_scale: 0.05
 
 hires_gen:
   width: 512
   height: 512
-  max_iter: 256
+  max_iter: 1024
   use_supersampling: true
   use_gpu: true
 
 total_final: 2000
-min_depth: 1
-max_depth: 6
+min_depth: 2
+max_depth: 10
 
 fractal_types:
   - mandelbrot

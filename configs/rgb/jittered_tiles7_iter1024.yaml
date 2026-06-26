@@ -35,9 +35,9 @@ hires_gen:
   use_supersampling: true
   use_gpu: true
 
-total_final: 500
-min_depth: 3
-max_depth: 12
+total_final: 2000
+min_depth: 2
+max_depth: 10
 
 fractal_types:
   - mandelbrot
