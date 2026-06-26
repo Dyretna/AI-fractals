@@ -21,18 +21,16 @@ from ai_fractals.analysis import FractalQualityEvaluator
 from ai_fractals.data import CURATED_COLORMAPS, RGBDatasetBuilder
 from ai_fractals.generators import BaseFractalGenerator, create_generator
 from ai_fractals.processing import EdgeDetector
-from ai_fractals.search.tile_search import BaseTileSearch, TileSearchJittered
+from ai_fractals.search import BaseTileSearch, create_search_strategy
 
 
-def main() -> None:
-    load_dotenv()
+def main(cfg_path: Path) -> None:
     project_root = Path(os.getenv("PROJECT_ROOT", "."))
     output_root = project_root / "dataset" / "rgb"
     output_root.mkdir(parents=True, exist_ok=True)
 
     # load config file
-    yaml_config = project_root / "configs" / "rgb_batch.yaml"
-    cfg = yaml.safe_load(open(yaml_config))
+    cfg = yaml.safe_load(open(cfg_path))
 
     detector = EdgeDetector(**cfg["detector"])
     evaluator = FractalQualityEvaluator(**cfg["evaluator"], detector=detector)
@@ -53,9 +51,9 @@ def main() -> None:
                     colormap=colormap,
                     **cfg["tile_gen"],
                 )
-
-                tile_search: BaseTileSearch = TileSearchJittered(
-                    tile_gen=tile_gen, evaluator=evaluator, **cfg["tile"]
+                search_strategy_cls = create_search_strategy(cfg["search_strategy"])
+                tile_search: BaseTileSearch = search_strategy_cls(
+                    tile_gen=tile_gen, evaluator=evaluator, **cfg["search_params"]
                 )
 
                 # high-res generator for final RGB render
@@ -69,7 +67,7 @@ def main() -> None:
                 width = cfg["hires_gen"].get("width")
                 height = cfg["hires_gen"].get("height")
                 out_dir = Path(
-                    output_root / fractal_type / f"{width}_{height}_iter{max_iter}_test"
+                    output_root / fractal_type / f"{width}_{height}_iter{max_iter}"
                 )
                 out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -90,4 +88,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    load_dotenv()
+    project_root = Path(os.getenv("PROJECT_ROOT", "."))
+    yaml_path = project_root / "configs" / "rgb_batch.yaml"
+
+    main(yaml_path)

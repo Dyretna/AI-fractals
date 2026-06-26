@@ -20,7 +20,8 @@ tile_gen:
   use_supersampling: false
   use_gpu: true
 
-tile:
+search_strategy: tile_basic
+search_params:
   n_tiles: 7
   top_k: 5
 
