@@ -18,7 +18,7 @@ import yaml
 from dotenv import load_dotenv
 
 from ai_fractals.analysis import FractalQualityEvaluator
-from ai_fractals.data import CURATED_COLORMAPS, RGBDatasetBuilder
+from ai_fractals.data import RGBDatasetBuilder
 from ai_fractals.generators import BaseFractalGenerator, create_generator
 from ai_fractals.processing import EdgeDetector
 from ai_fractals.search import BaseTileSearch, create_search_strategy
@@ -32,13 +32,16 @@ def run_rgb_batch(cfg: dict, project_root: Path) -> None:
     evaluator = FractalQualityEvaluator(**cfg["evaluator"], detector=detector)
 
     num_types = len(cfg["fractal_types"])
-    num_cmaps = len(CURATED_COLORMAPS)
+    num_cmaps = len(cfg["colormaps"])
 
     total_combinations = num_types * num_cmaps
-    per_cfg_loop = cfg["total_final"] // total_combinations
+    per_cfg_loop = cfg["batch_img_gen"] // total_combinations
+
+    completed_cmaps = []
+    remaining_cmaps = list(cfg["colormaps"])
 
     for fractal_type in cfg["fractal_types"]:
-        for colormap in CURATED_COLORMAPS:
+        for colormap in cfg["colormaps"]:
             # low-res generator for tile-search
             tile_gen: BaseFractalGenerator = create_generator(
                 fractal_type=fractal_type,
@@ -77,9 +80,20 @@ def run_rgb_batch(cfg: dict, project_root: Path) -> None:
                 save_metadata=False,
             )
 
-            print("\n", builder, "\n")
+            # if first loop - print builder object
+            if not completed_cmaps:
+                print("\n", builder, "\n")
+
             builder.run(per_cfg_loop)
+
+            # progress prints
+            print(f"[{fractal_type}] Completed: {completed_cmaps}")
+            print(f"[{fractal_type}] Remaining: {remaining_cmaps}")
             print(f"Completed batch for {fractal_type}\n")
+            completed_cmaps.append(colormap)
+            remaining_cmaps.remove(colormap)
+            total_combinations -= 1
+            print(f"Batches to go: {total_combinations}")
 
 
 if __name__ == "__main__":

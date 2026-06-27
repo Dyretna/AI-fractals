@@ -25,6 +25,7 @@ class BaseFractalGenerator(ABC):
         max_iter=1024,
         colormap="twilight_shifted",
         use_supersampling=True,
+        device="cpu",
     ):
         self.width = width
         self.height = height
@@ -32,6 +33,7 @@ class BaseFractalGenerator(ABC):
         self.colormap = colormap
         self.cmap = plt.get_cmap(colormap)
         self.use_supersampling = use_supersampling
+        self.device = device
 
         # pytorch device, GPU if available
         self.device = (

@@ -21,20 +21,20 @@ class EdgeDetector:
         >>> detector = EdgeDetector(
         ...     canny_low=100,
         ...     canny_high=200,
-        ...     smoothing_method='median',
-        ...     smoothing_kernel=5
+        ...     smoothing_method='gaussian',
+        ...     smoothing_kernel=3
         ... )
         >>> edges = detector.detect(image)
     """
 
     def __init__(
         self,
-        canny_low: int = 100,
-        canny_high: int = 200,
+        canny_low: int = 40,
+        canny_high: int = 120,
         apply_smoothing: bool = True,
-        smoothing_method: str = "median",
-        smoothing_kernel: int = 5,
-        smoothing_sigma: float = 0,
+        smoothing_method: str = "gaussian",
+        smoothing_kernel: int = 3,
+        smoothing_sigma: float = 0.8,
     ):
         """
         Initialize edge detector.

@@ -10,8 +10,11 @@ from .base import BaseDatasetBuilder
 
 
 class RGBDatasetBuilder(BaseDatasetBuilder):
-    """
-    Dataset builder for high-resolution RGB fractal renders.
+    """RGBDatasetBuilder
+
+    See BaseDatasetBuilder for shared behavior.
+
+    This subclass produces RGB fractal images using a colormap.
     """
 
     def __init__(self, *args, **kwargs):

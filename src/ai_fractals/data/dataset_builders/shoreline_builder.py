@@ -48,8 +48,11 @@ from .base import BaseDatasetBuilder
 
 
 class ShorelineDatasetBuilder(BaseDatasetBuilder):
-    """
-    Dataset builder for shoreline (edge-map) fractal datasets.
+    """RGBDatasetBuilder
+
+    See BaseDatasetBuilder for shared behavior.
+
+    This subclass produces greyscale Shorelines.
     """
 
     def __init__(self, *args, **kwargs):

@@ -20,7 +20,7 @@ tile_gen:
   height: 256
   max_iter: 1024
   use_supersampling: false
-  use_gpu: true
+  device: cuda
 
 search_strategy: tile_jittered
 search_params:
@@ -32,14 +32,12 @@ hires_gen:
   width: 512
   height: 512
   max_iter: 1024
-  use_supersampling: true
-  use_gpu: true
+  use_supersampling: false
+  device: cuda
 
-total_final: 2000
-min_depth: 2
-max_depth: 10
+batch_img_gen: 2000
+min_depth: 1
+max_depth: 8
 
 fractal_types:
   - mandelbrot
-
-colormap: twilight_shifted

@@ -85,10 +85,23 @@ class BaseTileSearch(ABC):
         self.evaluator = evaluator
         self.n_tiles = int(n_tiles)
         self.top_k = int(top_k)
+        self._depth = 0
 
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
+
+    @property
+    def depth(self):
+        return self._depth
+
+    @depth.setter
+    def depth(self, d: int):
+        if not isinstance(d, int):
+            raise TypeError("depth must be int")
+        if d < 0 or d > 100:
+            raise ValueError("depth must be between 0 and 100")
+        self._depth = d
 
     def run(self, bounds: Bounds) -> TileResult:
         """Perform one tile-search step."""
@@ -181,6 +194,10 @@ class TileSearchBasic(BaseTileSearch):
     def _select_tile(self, tiles: List[TileResult]) -> TileResult:
         accepted = [t for t in tiles if t["accept"]]
 
+        # depth 1 --> variation mode
+        if self.depth == 1 and accepted:
+            return random.choice(accepted)
+
         if accepted:
             pool = accepted
         else:
@@ -217,6 +234,10 @@ class TileSearchJittered(BaseTileSearch):
     def _select_tile(self, tiles: List[TileResult]) -> TileResult:
         # Use the basic selection logic
         accepted = [t for t in tiles if t["accept"]]
+
+        # depth 1 --> variation mode
+        if self.depth == 1 and accepted:
+            return random.choice(accepted)
 
         if accepted:
             pool = accepted

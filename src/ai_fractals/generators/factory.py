@@ -15,14 +15,14 @@ def format_available_types():
 
 
 def create_generator(
-    fractal_type: str,
     *,
+    fractal_type: str,
     width: int,
     height: int,
     max_iter: int,
     colormap: str,
     use_supersampling: bool,
-    use_gpu: bool = False,
+    device: str,
 ):
     if fractal_type not in GENERATOR_TABLE:
         raise ValueError(
@@ -32,7 +32,14 @@ def create_generator(
 
     GPUClass, CPUClass = GENERATOR_TABLE[fractal_type]
 
-    cls = GPUClass if use_gpu else CPUClass
+    # get correct generator type according to device type
+    match device:
+        case "cpu":
+            cls = CPUClass
+        case "cuda":
+            cls = GPUClass
+        case _:
+            raise ValueError(f"device must be 'cpu' or 'cuda', {device}")
 
     return cls(
         width=width,

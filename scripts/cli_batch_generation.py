@@ -8,6 +8,44 @@ from batch_generation.batch_RGB_generation import run_rgb_batch
 from batch_generation.batch_shoreline_generation import run_shoreline_batch
 from dotenv import load_dotenv
 
+from ai_fractals.data import (
+    CURATED_COLORMAPS,
+    DISCRETE_GRADIENTS,
+    THEMED,
+    THREE_COLOR_GRADIENTS,
+)
+
+# -----------------------------------------------------------------
+# Handling and colormaps to insert into cfg dict
+# -----------------------------------------------------------------
+
+COLORMAP_GROUPS = {
+    "curated_colormaps": CURATED_COLORMAPS,
+    "discrete_gradients": DISCRETE_GRADIENTS,
+    "three_color_gradients": THREE_COLOR_GRADIENTS,
+    "themed": THEMED,
+}
+
+
+def resolve_colormap_group(cfg: dict) -> dict:
+    """Resolve 'colormap_group' into a concrete 'colormaps' list."""
+    group_key = cfg.get("colormap_group", None)
+
+    if not group_key:
+        return cfg  # nothing to do
+
+    if group_key not in COLORMAP_GROUPS:
+        raise ValueError(
+            f"Unknown colormap_group '{group_key}'. "
+            f"Available groups: {list(COLORMAP_GROUPS.keys())}"
+        )
+
+    cfg["colormaps"] = COLORMAP_GROUPS[group_key]
+    return cfg
+
+
+# -----------------------------------------------------------------
+
 
 def load_config(path: str) -> dict:
     """Load YAML config file."""
@@ -43,6 +81,7 @@ Examples:
     for cfg_path in args.config:
         # Load YAML
         cfg: dict = yaml.safe_load(open(cfg_path))
+        cfg = resolve_colormap_group(cfg)
 
         # Determine job type
         job_type = cfg.get("job_type", None)

@@ -3,15 +3,25 @@ import argparse
 import os
 from pathlib import Path
 
+import torch
 from dotenv import load_dotenv
 from matplotlib import colormaps
 
+# Core components
+from ai_fractals.analysis import FractalQualityEvaluator
 from ai_fractals.data import RGBDatasetBuilder
+from ai_fractals.generators import create_generator
+from ai_fractals.processing import EdgeDetector
+from ai_fractals.search import TileSearchBasic
 
 
 def main():
     load_dotenv()
     project_root = Path(os.getenv("PROJECT_ROOT"))
+
+    # device
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    device = str(device).strip().lower()
 
     parser = argparse.ArgumentParser(
         description=(
@@ -47,7 +57,7 @@ Examples:
         "--type",
         type=str,
         default="mandelbrot",
-        help="Fractal type: mandelbrot or julia (default: mandelbrot)",
+        help="Fractal type: mandelbrot (default: mandelbrot)",
     )
 
     # -----------------------------
@@ -80,7 +90,7 @@ Examples:
         "--out",
         type=str,
         default=None,
-        help="Output directory (default: dataset/fractals/<type>/<width>_<height>/)",
+        help="Output directory (default: dataset/rgb/<type>/<width>_<height>_<maxiter>/)",
     )
 
     # -----------------------------
@@ -100,18 +110,59 @@ Examples:
     if args.out:
         output_dir = Path(args.out)
     else:
-        output_dir = project_root / "dataset" / "fractals" / args.type
-
+        output_dir = (
+            project_root
+            / "dataset"
+            / "rgb"
+            / args.type
+            / f"{args.width}_{args.height}_iter{args.max_iter}"
+        )
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Build dataset
-    builder = RGBDatasetBuilder(
+    # -----------------------------
+    # Construct components
+    # -----------------------------
+
+    detector = EdgeDetector()
+    evaluator = FractalQualityEvaluator(detector)
+
+    tile_search = TileSearchBasic(
+        tile_gen=create_generator(
+            fractal_type=args.type,
+            width=256,
+            height=256,
+            max_iter=256,
+            colormap=args.cmap,
+            use_supersampling=False,
+            device=device,
+        ),
+        evaluator=evaluator,
+        n_tiles=5,
+        top_k=5,
+    )
+
+    hires = create_generator(
         fractal_type=args.type,
         width=args.width,
         height=args.height,
         max_iter=args.max_iter,
         colormap=args.cmap,
+        use_supersampling=False,
+        device=device,
+    )
+
+    # -----------------------------
+    # Build dataset
+    # -----------------------------
+    builder = RGBDatasetBuilder(
+        # tools
+        tile_search=tile_search,
+        hires_generator=hires,
+        evaluator=evaluator,
+        # output
         output_dir=output_dir,
+        # cmap
+        colormap=args.cmap,
     )
 
     print("\n", builder, "\n")

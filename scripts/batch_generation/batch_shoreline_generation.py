@@ -33,12 +33,12 @@ def run_shoreline_batch(cfg: dict, project_root: Path) -> None:
     evaluator = FractalQualityEvaluator(**cfg["evaluator"], detector=detector)
 
     for fractal_type in cfg["fractal_types"]:
-        per_fractal_type = cfg["total_final"] // len(cfg["fractal_types"])
+        per_fractal_type = cfg["batch_img_gen"] // len(cfg["fractal_types"])
 
         # low-res generator for tile-search
         tile_gen: BaseFractalGenerator = create_generator(
             fractal_type=fractal_type,
-            colormap=cfg["colormap"],
+            colormap="twilight_shifted",
             **cfg["tile_gen"],
         )
 
@@ -50,7 +50,7 @@ def run_shoreline_batch(cfg: dict, project_root: Path) -> None:
         # high-res generator for final shoreline extraction
         hires_generator: BaseFractalGenerator = create_generator(
             fractal_type=fractal_type,
-            colormap=cfg["colormap"],
+            colormap="twilight_shifted",
             **cfg["hires_gen"],
         )
 

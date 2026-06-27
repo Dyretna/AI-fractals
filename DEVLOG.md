@@ -1,5 +1,25 @@
 # Devlog
 
+## **June 27, 2026**
+
+I’ve made a new batch of 2000 images running overnight — iter 1024 on the tile‑search generator, but double that for the high‑res images. Max depth is 8, and since I’m using 7 tiles, each step becomes a more aggressive zoom because every tile is relatively smaller. It’s weird — on some colormaps max_depth 8 feels pretty balanced, on others not at all. Could also be that the camera ended up in a strange location.
+
+Still curating the colormaps. Three‑color gradients and Seasons have to go — too boring. Also Pastel, since they’re too bright and I don’t have the energy to fix them afterwards.
+
+I’d like to make a shorter run with only the discrete gradient colormaps (like Accent, Paired, Tab and the Set series). They give quite psychedelic effects, and I’m very interested to see how the GANs will handle them together with everything else. Even though the VAE doesn’t know anything about the structures these colormaps create (it runs on the BW raw math structures), so we can’t interpolate between different colormaps, it’s still trained on different RGB images, so… yeah, we’ll see. But making such a run… hmm. I’ve more or less hardcoded using CURATED_COLORMAPS in the batch runner… hmm. We could expose the different CONSTANTS in the CLI and make a selection there? (Individual colormaps would be too much work for the end user.) `--help` could show the different options. Could work. Also, wierd that i still have colormaps in Shoreline configs...
+
+---
+
+came to think of the simple fractal generator. i Actually have not it since i refactored the generation pipeline - It most certainly is broken - it i don't think a somple generator without configs is actaully doable anymore... damn... maybe we should just drop it? yeah probably... damn. i mean, we could just make a new pipeline that is very easy to configure through the cli using the same components, jsut without the configs... hm.
+ah just want to feel progress haha... man.
+
+---
+
+I was assigning the device with pytorch in the datasetbuilder still - not needed, that should be done early on in the configs -> generator scripts. also saw that we used a boolen flag for assigning devide - proboably better to just use "device" as signature - so om changing that, and adds it as attribute to BaseFractalGenerator. cleaning up the factory a a bit... and all the configs... lol.
+
+
+
+
 ## First Entry, **June 26, 2026**
 
 I’ve been working on this project for a while now, and today feels like a good moment to stop and actually write down where things are, how they got here, and what the hell I’ve been doing. The codebase has changed a bit since i started out,  So here’s a recap...

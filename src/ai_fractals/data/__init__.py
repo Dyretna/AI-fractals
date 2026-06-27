@@ -1,6 +1,5 @@
 from .colors import (
     CURATED_COLORMAPS,
-    CURATED_SHORELINE_COLORMAPS,
     DISCRETE_GRADIENTS,
     GREYS,
     SINGLE_COLOR_GRADIENTS,
@@ -24,7 +23,6 @@ __all__ = [
     "THEMED",
     "DISCRETE_GRADIENTS",
     "CURATED_COLORMAPS",
-    "CURATED_SHORELINE_COLORMAPS",
     "FractalDatasetBuilder",
     # builders
     "BaseDatasetBuilder",

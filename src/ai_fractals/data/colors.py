@@ -95,6 +95,18 @@ THREE_COLOR_GRADIENTS = [
     "YlOrRd_r",
 ]
 
+SEASONS = [
+    "autumn",
+    "spring",
+    "summer",
+    "winter",
+    # reversed
+    "autumn_r",
+    "spring_r",
+    "summer_r",
+    "winter_r",
+]
+
 THEMED = [
     "magma",
     "inferno",
@@ -109,7 +121,6 @@ THEMED = [
     "vanimo",
     "Spectral",
     "afmhot",
-    "autumn",
     "bone",
     "brg",
     "bwr",
@@ -132,10 +143,7 @@ THEMED = [
     "prism",
     "rainbow",
     "seismic",
-    "spring",
-    "summer",
     "terrain",
-    "winter",
     "CMRmap",
     # Reversed
     "magma_r",
@@ -151,7 +159,6 @@ THEMED = [
     "vanimo_r",
     "Spectral_r",
     "afmhot_r",
-    "autumn_r",
     "bone_r",
     "brg_r",
     "bwr_r",
@@ -174,21 +181,18 @@ THEMED = [
     "prism_r",
     "rainbow_r",
     "seismic_r",
-    "spring_r",
-    "summer_r",
     "terrain_r",
-    "winter_r",
     "CMRmap_r",
 ]
 
 # psychedelic
 DISCRETE_GRADIENTS = [
-    "flag",
+    # "flag",       # too intense - cycles colors too fast
     "Accent",
     "Dark2",
     "Paired",
-    "Pastel1",
-    "Pastel2",
+    # "Pastel1",    # too bright!
+    # "Pastel2",    # too bright!
     "Set1",
     "Set2",
     "Set3",
@@ -197,12 +201,12 @@ DISCRETE_GRADIENTS = [
     "tab20b",
     "tab20c",
     # reversed
-    "flag_r",
+    # "flag_r",     # too intense - cycles colors too fast
     "Accent_r",
     "Dark2_r",
     "Paired_r",
-    "Pastel1_r",
-    "Pastel2_r",
+    # "Pastel1_r",  # too bright!
+    # "Pastel2_r",  # too bright!
     "Set1_r",
     "Set2_r",
     "Set3_r",
@@ -215,7 +219,6 @@ DISCRETE_GRADIENTS = [
 # ------------------------------------------------------------------------------
 # Creating Curated colormap
 # Keep:
-#   GRADIENT_COMBINATIONS
 #   THEMED
 #   DISCRETE_GRADIENTS
 #
@@ -223,30 +226,31 @@ DISCRETE_GRADIENTS = [
 #   GREYS
 #   SINGLE_COLOR_GRADIENTS
 #   TWO_COLOR_GRADIENTS
+#   THREE_COLOR_GRADIENTS
 #   "custom filter"
 # ------------------------------------------------------------------------------
 CUSTOM_OUT = [
+    "afmhot",
+    "cividis",
     "hot",
     "gist_heat",
-    "cividis",
+    "magma",
+    "plasma",
     "viridis",
     # reversed
+    "afmhot_r",
+    "cividis_r",
     "hot_r",
     "gist_heat_r",
-    "cividis_r",
+    "magma_r",
+    "plasma_r",
     "viridis_r",
 ]
 
 # Combine all redundant
 OUT_FILTERED_RGB = [
     *GREYS,
-    *SINGLE_COLOR_GRADIENTS,
-    *TWO_COLOR_GRADIENTS,
-    *CUSTOM_OUT,
-]
-
-OUT_FILTERED_SHORELINES = [
-    *GREYS,
+    *SEASONS,
     *SINGLE_COLOR_GRADIENTS,
     *TWO_COLOR_GRADIENTS,
     *THREE_COLOR_GRADIENTS,
@@ -254,11 +258,7 @@ OUT_FILTERED_SHORELINES = [
 ]
 
 CURATED_COLORMAPS = [c for c in list(colormaps) if c not in OUT_FILTERED_RGB]
-CURATED_SHORELINE_COLORMAPS = [
-    c for c in list(CURATED_COLORMAPS) if c not in OUT_FILTERED_SHORELINES
-]
-
 
 if __name__ == "__main__":
     print("\n Curated colormaps: ", CURATED_COLORMAPS)
-    print("\n Curated Shoreline colormaps: ", CURATED_SHORELINE_COLORMAPS)
+    print("Curated colormaps length: ", len(CURATED_COLORMAPS))
