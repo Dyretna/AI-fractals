@@ -161,13 +161,14 @@ class BaseDatasetBuilder(ABC):
         self.depth += 1
 
         # let subclass process tile (RGB or shoreline)
-        processed, score, passed, metrics = self._process_tile(chosen)
-
-        if not passed:
-            return 0
-
-        # save?
+        # only if we are in accepted depth
         if self.save_min_depth <= self.depth <= self.save_max_depth:
+            processed, score, passed, metrics = self._process_tile(chosen)
+
+            if not passed:
+                return 0
+
+            # save?
             self._save(processed, chosen, score, metrics)
 
             if self.depth == self.save_max_depth:
