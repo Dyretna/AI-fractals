@@ -24,76 +24,64 @@ from ai_fractals.processing import EdgeDetector
 from ai_fractals.search import BaseTileSearch, create_search_strategy
 
 
-def run_rgb_batch(cfg: dict, project_root: Path) -> None:
-    output_root = project_root / "dataset" / "rgb"
-    output_root.mkdir(parents=True, exist_ok=True)
+def run_rgb_batch(cfg: dict) -> None:
+    output_dir = Path(cfg["output_path"])
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     detector = EdgeDetector(**cfg["detector"])
     evaluator = FractalQualityEvaluator(**cfg["evaluator"], detector=detector)
 
-    num_types = len(cfg["fractal_types"])
-    num_cmaps = len(cfg["colormaps"])
-
-    total_combinations = num_types * num_cmaps
-    per_cfg_loop = cfg["batch_img_gen"] // total_combinations
-
+    total_batches = len(cfg["colormaps"])
+    per_cfg_loop = cfg["batch_size"] // total_batches
     completed_cmaps = []
     remaining_cmaps = list(cfg["colormaps"])
 
-    for fractal_type in cfg["fractal_types"]:
-        for colormap in cfg["colormaps"]:
-            # low-res generator for tile-search
-            tile_gen: BaseFractalGenerator = create_generator(
-                fractal_type=fractal_type,
-                colormap=colormap,
-                **cfg["tile_gen"],
-            )
-            search_strategy_cls = create_search_strategy(cfg["search_strategy"])
-            tile_search: BaseTileSearch = search_strategy_cls(
-                tile_gen=tile_gen, evaluator=evaluator, **cfg["search_params"]
-            )
+    for colormap in cfg["colormaps"]:
+        # low-res generator for tile-search
+        tile_gen: BaseFractalGenerator = create_generator(
+            fractal_type=cfg["fractal_type"],
+            colormap=colormap,
+            **cfg["tile_gen"],
+        )
+        search_strategy_cls = create_search_strategy(cfg["search_strategy"])
+        tile_search: BaseTileSearch = search_strategy_cls(
+            tile_gen=tile_gen, evaluator=evaluator, **cfg["search_params"]
+        )
 
-            # high-res generator for final RGB render
-            hires_generator: BaseFractalGenerator = create_generator(
-                fractal_type=fractal_type,
-                colormap=colormap,
-                **cfg["hires_gen"],
-            )
+        # high-res generator for final RGB render
+        hires_generator: BaseFractalGenerator = create_generator(
+            fractal_type=cfg["fractal_type"],
+            colormap=colormap,
+            **cfg["hires_gen"],
+        )
 
-            width = cfg["hires_gen"].get("width")
-            height = cfg["hires_gen"].get("height")
-            out_dir = Path(
-                output_root
-                / fractal_type
-                / f"{width}_{height}_iter{cfg['hires_gen']['max_iter']}"
-            )
-            out_dir.mkdir(parents=True, exist_ok=True)
+        builder = RGBDatasetBuilder(
+            tile_search=tile_search,
+            hires_generator=hires_generator,
+            evaluator=evaluator,
+            output_dir=output_dir,
+            save_min_depth=cfg["min_depth"],
+            save_max_depth=cfg["max_depth"],
+            colormap=colormap,
+            save_metadata=False,
+        )
 
-            builder = RGBDatasetBuilder(
-                tile_search=tile_search,
-                hires_generator=hires_generator,
-                evaluator=evaluator,
-                output_dir=out_dir,
-                save_min_depth=cfg["min_depth"],
-                save_max_depth=cfg["max_depth"],
-                colormap=colormap,
-                save_metadata=False,
-            )
+        # if first loop - print builder object
+        if not completed_cmaps:
+            print("\n", builder, "\n")
 
-            # if first loop - print builder object
-            if not completed_cmaps:
-                print("\n", builder, "\n")
+        print(f"Current cmap: {colormap}\n")
+        builder.run(per_cfg_loop)
 
-            builder.run(per_cfg_loop)
+        # progress prints
+        completed_cmaps.append(colormap)
+        remaining_cmaps.remove(colormap)
+        total_batches -= 1
 
-            # progress prints
-            print(f"[{fractal_type}] Completed: {completed_cmaps}")
-            print(f"[{fractal_type}] Remaining: {remaining_cmaps}")
-            print(f"Completed batch for {fractal_type}\n")
-            completed_cmaps.append(colormap)
-            remaining_cmaps.remove(colormap)
-            total_combinations -= 1
-            print(f"Batches to go: {total_combinations}")
+        print(f"Completed batch for cmap {colormap}\n")
+        print(f"Completed: {completed_cmaps}")
+        print(f"Remaining: {remaining_cmaps}")
+        print(f"Batches to go: {total_batches}")
 
 
 if __name__ == "__main__":
@@ -103,4 +91,8 @@ if __name__ == "__main__":
 
     cfg = yaml.safe_load(open(yaml_path))
 
-    run_rgb_batch(cfg, project_root)
+    # set output
+    output_dir = Path(project_root / cfg["output_dir"])
+    cfg["output_path"] = Path(project_root / cfg["output_dir"]).resolve()
+
+    run_rgb_batch(cfg)

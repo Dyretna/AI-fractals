@@ -188,7 +188,7 @@ THEMED = [
 # psychedelic
 DISCRETE_GRADIENTS = [
     # "flag",       # too intense - cycles colors too fast
-    "Accent",
+    # "Accent",     # too bright!
     "Dark2",
     "Paired",
     # "Pastel1",    # too bright!
@@ -200,7 +200,7 @@ DISCRETE_GRADIENTS = [
     "tab20",
     "tab20b",
     "tab20c",
-    # reversed
+    # --- reversed ---
     # "flag_r",     # too intense - cycles colors too fast
     "Accent_r",
     "Dark2_r",

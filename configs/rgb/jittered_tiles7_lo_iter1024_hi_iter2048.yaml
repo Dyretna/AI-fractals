@@ -1,5 +1,5 @@
 # relative path
-output_dir: dataset/rgb/mandelbrot/1024_1024_iter1024
+output_dir: dataset/rgb/mandelbrot/1024_1024_iter2048
 job_type: rgb
 fractal_type: mandelbrot
 colormap_group: curated_colormaps
@@ -38,6 +38,6 @@ search_params:
 hires_gen:
   width: 1024
   height: 1024
-  max_iter: 1024
+  max_iter: 2048
   use_supersampling: true
   device: cuda

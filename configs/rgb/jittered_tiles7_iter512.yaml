@@ -1,4 +1,11 @@
+# relative path
+output_dir: dataset/rgb/mandelbrot/1024_1024_iter512
 job_type: rgb
+fractal_type: mandelbrot
+colormap_group: curated_colormaps
+batch_size: 2000
+min_depth: 1
+max_depth: 8
 
 detector:
   canny_low: 40
@@ -34,12 +41,3 @@ hires_gen:
   max_iter: 512
   use_supersampling: true
   device: cuda
-
-batch_img_gen: 2000
-min_depth: 1
-max_depth: 8
-
-fractal_types:
-  - mandelbrot
-
-colormap_group: curated_colormaps

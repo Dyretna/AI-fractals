@@ -1,4 +1,10 @@
+# relative path
+output_dir: dataset/shoreline/mandelbrot/512_512_iter512
 job_type: shoreline
+fractal_type: mandelbrot
+batch_size: 2000
+min_depth: 1
+max_depth: 8
 
 detector:
   canny_low: 50
@@ -34,10 +40,3 @@ hires_gen:
   max_iter: 512
   use_supersampling: false
   device: cuda
-
-batch_img_gen: 2000
-min_depth: 1
-max_depth: 8
-
-fractal_types:
-  - mandelbrot

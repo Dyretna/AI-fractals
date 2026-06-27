@@ -1,4 +1,11 @@
+# relative path
+output_dir: dataset/rgb/fast_pipe_test
 job_type: rgb
+fractal_type: mandelbrot
+colormap_group: discrete_gradients
+batch_size: 100
+min_depth: 1
+max_depth: 10
 
 detector:
   canny_low: 40
@@ -18,7 +25,7 @@ evaluator:
 tile_gen:
   width: 256
   height: 256
-  max_iter: 1024
+  max_iter: 256
   use_supersampling: false
   device: cuda
 
@@ -29,17 +36,8 @@ search_params:
   jitter_scale: 0.05
 
 hires_gen:
-  width: 1024
-  height: 1024
-  max_iter: 2048
+  width: 512
+  height: 512
+  max_iter: 512
   use_supersampling: true
   device: cuda
-
-batch_img_gen: 2000
-min_depth: 1
-max_depth: 8
-
-fractal_types:
-  - mandelbrot
-
-colormap_group: curated_colormaps

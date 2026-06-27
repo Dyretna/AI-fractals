@@ -1,4 +1,11 @@
+# relative path
+output_dir: dataset/rgb/mandelbrot/hires_discrete_gradients
 job_type: rgb
+fractal_type: mandelbrot
+colormap_group: discrete_gradients
+batch_size: 400
+min_depth: 3
+max_depth: 10
 
 detector:
   canny_low: 40
@@ -34,12 +41,3 @@ hires_gen:
   max_iter: 4096
   use_supersampling: true
   device: cuda
-
-batch_img_gen: 400
-min_depth: 3
-max_depth: 10
-
-fractal_types:
-  - mandelbrot
-
-colormap_group: discrete_gradients
