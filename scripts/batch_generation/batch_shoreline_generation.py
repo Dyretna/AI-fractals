@@ -12,11 +12,7 @@ strategies and evaluators, then composes a ShorelineDatasetBuilder for each
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
-
-import yaml
-from dotenv import load_dotenv
 
 from ai_fractals.analysis import FractalQualityEvaluator
 from ai_fractals.data import ShorelineDatasetBuilder
@@ -63,17 +59,3 @@ def run_shoreline_batch(cfg: dict) -> None:
     )
     print("\n", builder, "\n")
     builder.run(cfg["batch_size"])
-
-
-if __name__ == "__main__":
-    load_dotenv()
-    project_root = Path(os.getenv("PROJECT_ROOT"))
-    yaml_path = project_root / "configs" / "shoreline_jittered_batch.yaml"
-
-    cfg = yaml.safe_load(open(yaml_path))
-
-    # set output
-    output_dir = Path(project_root / cfg["output_dir"])
-    cfg["output_path"] = Path(project_root / cfg["output_dir"]).resolve()
-
-    run_shoreline_batch(cfg, project_root)

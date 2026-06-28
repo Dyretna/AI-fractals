@@ -11,11 +11,7 @@ RGBDatasetBuilder for each fractal_type and runs the batch job.
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
-
-import yaml
-from dotenv import load_dotenv
 
 from ai_fractals.analysis import FractalQualityEvaluator
 from ai_fractals.data import RGBDatasetBuilder
@@ -71,6 +67,7 @@ def run_rgb_batch(cfg: dict) -> None:
             print("\n", builder, "\n")
 
         print(f"Current cmap: {colormap}\n")
+
         builder.run(per_cfg_loop)
 
         # progress prints
@@ -82,17 +79,3 @@ def run_rgb_batch(cfg: dict) -> None:
         print(f"Completed: {completed_cmaps}")
         print(f"Remaining: {remaining_cmaps}")
         print(f"Batches to go: {total_batches}")
-
-
-if __name__ == "__main__":
-    load_dotenv()
-    project_root = Path(os.getenv("PROJECT_ROOT"))
-    yaml_path = project_root / "configs" / "rgb_batch.yaml"
-
-    cfg = yaml.safe_load(open(yaml_path))
-
-    # set output
-    output_dir = Path(project_root / cfg["output_dir"])
-    cfg["output_path"] = Path(project_root / cfg["output_dir"]).resolve()
-
-    run_rgb_batch(cfg)

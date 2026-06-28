@@ -17,8 +17,7 @@ Steps:
 1. Load RGB fractal image.
 2. Extract shoreline (in memory).
 3. Evaluate shoreline quality.
-4. If quality is acceptable, generate N augmentations.
-5. Save augmented images.
+4. If quality is acceptable, save.
 """
 
 from pathlib import Path
@@ -28,7 +27,7 @@ import cv2
 import numpy as np
 
 from ai_fractals.analysis import FractalQualityEvaluator
-from ai_fractals.processing import EdgeDetector, ImageAugmenter
+from ai_fractals.processing import EdgeDetector
 
 
 def shorelines_from_img(
@@ -36,11 +35,9 @@ def shorelines_from_img(
     output_dir: Path,
     detector: Optional[EdgeDetector] = None,
     evaluator: Optional[FractalQualityEvaluator] = None,
-    augmenter: Optional[ImageAugmenter] = None,
 ) -> None:
     detector = detector or EdgeDetector()
     evaluator = evaluator or FractalQualityEvaluator()
-    augmenter = augmenter or ImageAugmenter()
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -59,20 +56,14 @@ def shorelines_from_img(
             print(f"[SKIP] Low-quality shoreline: {img_path.name} (score={score:.3f})")
             continue
 
-        # step 3: augment
-        variants = augmenter.augment(shoreline)
+        # step 3: save
+        out = (shoreline * 255).astype(np.uint8)
 
-        # step 4: save
-        orig_name = img_path.stem  # removes .png
+        # new filename: originalname_tag.png
+        filename = f"{img_path.stem}_rgb2shore.png"
+        save_path = output_dir / filename
 
-        for tag, aug in variants.items():
-            out = (aug * 255).astype(np.uint8)
-
-            # new filename: originalname_tag.png
-            filename = f"{orig_name}_{tag}.png"
-            save_path = output_dir / filename
-
-            cv2.imwrite(str(save_path), out)
+        cv2.imwrite(str(save_path), out)
 
 
 if __name__ == "__main__":
@@ -105,16 +96,12 @@ if __name__ == "__main__":
         min_inside_ratio=0.0001,
         max_inside_ratio=0.9999,
     )
-    augmenter = ImageAugmenter(
-        horizontal_flip=True, vertical_flip=True, target_size=(256, 256)
-    )
 
     shorelines_from_img(
         input_dir=input_dir,
         output_dir=output_dir,
         detector=detector,
         evaluator=evaluator,
-        augmenter=augmenter,
     )
 
     print("Shoreline augmentation pipeline complete.")

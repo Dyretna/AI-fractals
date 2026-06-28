@@ -40,27 +40,8 @@ def resolve_colormap_group(cfg: dict) -> dict:
             f"Available groups: {list(COLORMAP_GROUPS.keys())}"
         )
 
-    # cfg["colormaps"] = COLORMAP_GROUPS[group_key]
-    cfg["colormaps"] = custom_colormap()  # to be used if pausing a batch
+    cfg["colormaps"] = COLORMAP_GROUPS[group_key]
 
-    return cfg
-
-
-def custom_colormap():
-    return [
-        "Paired_r",
-        "Set1_r",
-        "Set2_r",
-        "Set3_r",
-        "tab10_r",
-        "tab20_r",
-        "tab20b_r",
-        "tab20c_r",
-    ]
-
-
-#   [mandelbrot] Completed: ['Dark2_r', 'Accent', 'Dark2', 'Paired', 'Set1', 'Set2', 'Set3', 'tab10', 'tab20', 'tab20b', 'tab20c', 'Accent_r']
-#   [mandelbrot] Remaining: ['Paired_r', 'Set1_r', 'Set2_r', 'Set3_r', 'tab10_r', 'tab20_r', 'tab20b_r', 'tab20c_r']
 
 # -----------------------------------------------------------------
 
