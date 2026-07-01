@@ -7,12 +7,8 @@ from .colors import (
     THREE_COLOR_GRADIENTS,
     TWO_COLOR_GRADIENTS,
 )
-from .dataset_builders import (
-    BaseDatasetBuilder,
-    RGBDatasetBuilder,
-    ShorelineDatasetBuilder,
-)
-from .savers import BaseSaver, RGBSaver, ShorelineSaver
+from .loaders import RGBDataset, ShorelineDataset
+from .region_builder import RegionBuilder
 
 __all__ = [
     # colormap constants
@@ -23,13 +19,9 @@ __all__ = [
     "THEMED",
     "DISCRETE_GRADIENTS",
     "CURATED_COLORMAPS",
-    "FractalDatasetBuilder",
+    # loaders
+    "RGBDataset",
+    "ShorelineDataset",
     # builders
-    "BaseDatasetBuilder",
-    "RGBDatasetBuilder",
-    "ShorelineDatasetBuilder",
-    # savers
-    "BaseSaver",
-    "RGBSaver",
-    "ShorelineSaver",
+    "RegionBuilder",
 ]

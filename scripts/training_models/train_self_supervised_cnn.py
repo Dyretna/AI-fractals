@@ -25,10 +25,10 @@ import torchvision.transforms as T
 from dotenv import load_dotenv
 from torch.utils.data import DataLoader
 
-from ai_fractals.data.shoreline_dataset import ShorelineDataset
+from ai_fractals.data import ShorelineDataset
 from ai_fractals.logging_config import get_logger
-from ai_fractals.models.self_supervised_cnn import SelfSupervisedCNN
-from ai_fractals.training.self_supervised_trainer import SelfSupervisedTrainer
+from ai_fractals.models import SelfSupervisedCNN
+from ai_fractals.training import SelfSupervisedTrainer
 
 
 def main(dataset_path: Path, models_path: Path):

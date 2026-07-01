@@ -1,0 +1,32 @@
+# relative paths
+region_raw_dir: dataset/region/raw/
+region_evaluated_dir: dataset/region/evaluated
+region_rejected_dir: dataset/region/rejected
+
+shoreline_evaluated_dir: dataset/shoreline/test_03/evaluated/
+shoreline_rejected_dir: dataset/shoreline/test_03/rejected/
+
+job_type: shoreline
+fractal_type: mandelbrot
+
+detector:
+  canny_low: 30
+  canny_high: 200
+  apply_smoothing: false      # no smoothing
+  smoothing_method: gaussian
+  smoothing_kernel: 5
+  smoothing_sigma: 0.0
+
+evaluator:
+  quality_threshold: 0.3
+  min_edge_ratio: 0.01
+  max_edge_ratio: 0.99        # increase!
+  min_inside_ratio: 0.0001
+  max_inside_ratio: 0.9999
+
+hires_gen:
+  width: 512
+  height: 512
+  max_iter: 1024
+  use_supersampling: false
+  device: cuda

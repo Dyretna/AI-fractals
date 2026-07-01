@@ -1,6 +1,6 @@
 # AI-Fractals
 
-![image](example_images/conventional_fractals/YlGnBu_01.png)
+![image](example_images/conventional_fractals_(training_data)/YlGnBu_01.png)
 
 ## Overview
 

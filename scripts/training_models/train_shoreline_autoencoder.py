@@ -11,9 +11,9 @@ import torchvision.transforms as T
 from dotenv import load_dotenv
 from torch.utils.data import DataLoader
 
-from ai_fractals.data.shoreline_dataset import ShorelineDataset
+from ai_fractals.data import ShorelineDataset
 from ai_fractals.logging_config import get_logger
-from ai_fractals.models.autoencoder import AutoEncoder
+from ai_fractals.models import AutoEncoder
 from ai_fractals.training import AutoencoderTrainer, EarlyStopping
 
 

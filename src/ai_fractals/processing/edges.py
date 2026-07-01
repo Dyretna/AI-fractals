@@ -35,6 +35,9 @@ class EdgeDetector:
         smoothing_method: str = "gaussian",
         smoothing_kernel: int = 3,
         smoothing_sigma: float = 0.8,
+        apply_dilation: bool = False,
+        dilation_kernel: int = 3,
+        dilation_iterations: int = 1,
     ):
         """
         Initialize edge detector.
@@ -73,6 +76,9 @@ class EdgeDetector:
                 kernel_size=smoothing_kernel,
                 sigma=smoothing_sigma,
             )
+        self.apply_dilation = apply_dilation
+        self.dilation_kernel = dilation_kernel
+        self.dilation_iterations = dilation_iterations
 
     def detect(self, image: np.ndarray) -> np.ndarray:
         """
@@ -96,6 +102,10 @@ class EdgeDetector:
 
         # Detect edges
         edges = cv2.Canny(gray, self.canny_low, self.canny_high)
+
+        if self.apply_dilation:
+            kernel = np.ones((self.dilation_kernel, self.dilation_kernel), np.uint8)
+            edges = cv2.dilate(edges, kernel, iterations=self.dilation_iterations)
 
         return edges
 
