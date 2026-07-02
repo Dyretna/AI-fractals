@@ -17,7 +17,7 @@ def run_region_batch(cfg: dict) -> None:
     Produces only region metadata JSON files.
     """
 
-    region_dir = Path(cfg["region_output_dir"]).resolve()
+    region_dir = Path(cfg["output_dir"]).resolve()
     region_dir.mkdir(parents=True, exist_ok=True)
 
     # Detector + evaluator

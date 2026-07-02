@@ -39,7 +39,6 @@ In Progress:
 ├── notebooks/                      # demos, prototyping
 ├── scripts/                        # CLI tools, batch pipelines, utilities
 │   ├── cli_batch_generation.py
-│   ├── cli_simple_fractal_generation.py
 │   └── readme.md
 └── src/
     └── ai_fractals/
@@ -102,57 +101,35 @@ Then all paths will load correctly.
 
 
 ## CLI Usage
-The project includes two command‑line interfaces:
+The project now includes one command‑line interface:
 
-1. **A simple fractal generator CLI** — good for exploration and testing
-2. **A batch CLI** — used for large‑scale dataset generation via YAML
+**A batch CLI** — used for large‑scale dataset generation via YAML
 
-### Simple CLI (quick fractal generation)
-
-Basic usage (default: 50 Mandelbrot images):
-
-```bash
-    python scripts/cli_dataset_generation.py
-```
-
-High-resolution example:
-
-    python scripts/cli_dataset_generation.py \
-        --width 2048 \
-        --height 2048 \
-        --max_iter 1500
-
-#### Arguments for simple CLI
-    --n          Number of images to generate (default: 50)
-    --type       Fractal type: mandelbrot or julia (default: mandelbrot)
-    --width      Image width in pixels (default: 1024)
-    --height     Image height in pixels (default: 1024)
-    --max_iter   Maximum iterations for the fractal generator (default: 1024)
-    --cmap       Matplotlib colormap name (default: twilight)
-    --out        Output directory (default: PROJECT_ROOT/dataset/fractals/<type>)
+a simple CLI for generating RGB fractals has been deprecated due to changes in source-code.
 
 
 ### Batch CLI (YAML‑driven pipelines)
-For large‑scale dataset generation (RGB or shoreline), use:
+For large‑scale dataset generation ( Region, RGB or shoreline), use:
 
-Generate RGB datasets (batch pipeline)
+Generate metadata regions (batch pipeline)
+```bash
+python scripts/cli_batch_generation.py --config configs/region/rgb_cfg.yaml
+```
+
+Generate RGB datasets based on regions (batch pipeline)
 ```bash
 python scripts/cli_batch_generation.py --config configs/rgb/rgb_cfg.yaml
 ```
 
-Generate shoreline datasets (recommended for CNN training):
+Generate shoreline datasets based on regions (recommended for CNN training):
 ```bash
 python scripts/cli_batch_generation.py --config configs/shoreline/shoreline_cfg.yaml
 ```
 
-You can also run multiple pipelines in sequence:
-```bash
-python scripts/cli_batch_generation.py --config cfg1.yaml cfg2.yaml cfg3.yaml
-```
 
 Each config file defines:
 
-- job type (`rgb` or `shoreline`)
+- job type (`region`, `rgb` or `shoreline`)
 - fractal generator parameters
 - fractal search strategy settings
 - resolution, iteration counts, colormap, etc.

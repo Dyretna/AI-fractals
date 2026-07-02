@@ -14,6 +14,7 @@ grayscale contour maps ("shorelines") suitable for downstream ML training.
 from __future__ import annotations
 
 import json
+import shutil
 from pathlib import Path
 
 import numpy as np
@@ -73,11 +74,11 @@ def run_shoreline_batch(cfg: dict) -> None:
 
         if passed:
             img.save(shore_eval / shoreline_name)
-            # shutil.move(region_path, region_eval / region_path.name)
+            shutil.move(region_path, region_eval / region_path.name)
             print(f"[OK] {cid} score={score:.3f}")
         else:
             img.save(shore_reject / shoreline_name)
-            # shutil.move(region_path, region_reject / region_path.name)
+            shutil.move(region_path, region_reject / region_path.name)
             print(f"[REJECT] {cid} score={score:.3f}")
 
     print("Batch completed.")

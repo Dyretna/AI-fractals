@@ -231,17 +231,21 @@ DISCRETE_GRADIENTS = [
 # ------------------------------------------------------------------------------
 CUSTOM_OUT = [
     "afmhot",
+    "coolwarm",
     "cividis",
-    "hot",
+    "flag",
     "gist_heat",
+    "hot",
     "magma",
     "plasma",
     "viridis",
     # reversed
     "afmhot_r",
     "cividis_r",
-    "hot_r",
+    "coolwarm_r",
+    "flag_r",
     "gist_heat_r",
+    "hot_r",
     "magma_r",
     "plasma_r",
     "viridis_r",

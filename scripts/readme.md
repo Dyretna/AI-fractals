@@ -1,13 +1,14 @@
 # Scripts Directory
 
 This directory contains all standalone tools and batch scripts used for
-dataset generation, shoreline extraction, dataset cleanup, and model
-training. These scripts are **not** part of the core `ai_fractals` library.
-They are operational utilities intended for running batch jobs, fixing
-datasets, or performing one‑off tasks.
+metadata generation, shoreline rendering, dataset cleanup, and model
+training.
 
-The reason is to keep the core library clean and modular while placing all
-pipeline‑level tools here.
+The core library (ai_fractals/) provides generators, evaluators, logging,
+and processing utilities.
+
+The scripts/ directory provides pipeline-level tools that orchestrate
+large batch jobs.
 
 --------------------------------------------------------------------------
 
@@ -15,35 +16,24 @@ pipeline‑level tools here.
 ```
 scripts/
 ├── batch_generation/
-│   ├── batch_shoreline_generation.py
-│   └── batch_RGB_generation.py
+│   ├── batch_region_params.py
+│   └── batch_shoreline_from_meta.py
+│
 ├── training_models/
+│   ├── train_self_supervised_cnn.py
+│   ├── train_shoreline_autoencoder.py
+│   └── train_wgan_gp.py
+│
 ├── filters_and_fixers/
-├── cli_simple_fractal_generation.py
+│   ├── check_region_duplicates.py
+│   └── compare_shoreline_tests.py
+│
 ├── cli_batch_generation.py
-└── shorelines_from_img.py
+└── readme.md
 ```
 
 --------------------------------------------------------------------------
 
-## CLI Tools
-
-### cli_simple_fractal_generation.py
-A lightweight command‑line tool for generating small sets of RGB fractals
-without tile‑search. Useful for experimentation, debugging, and quick
-visualization.
-
-While useful for experimentation, building a full fractal-AI pipeline
-requires large and diverse datasets. For this reason, dedicated batch
-pipelines (dataset_batch_builder.py and shorelines_batch_builder.py) exist
-to generate thousands of samples efficiently.
-
-Example:
-```bash
-python cli_dataset_builder.py --type mandelbrot --n 50 --iter 512
-```
-
----
 
 ### cli_batch_generation.py
 The main entry point for running **one or multiple batch pipelines** using
@@ -67,16 +57,23 @@ python cli_batch_generation.py --config cfg1.yaml cfg2.yaml cfg3.yaml
 
 ## Batch Builders
 
-### batch_RGB_generation.py
-Generates large batches of high‑resolution RGB fractal images. This is the
-standard fractal dataset generator used for building reference datasets or
-training GAN models.
+### batch_region_params.py
+
+Generates region metadata (bounds, depth, compact_id, etc.) using the
+fractal tile search.
+This is the first step in the pipeline.
+All downstream rendering (RGB or shoreline) is based on these metadata files.
 
 
-### batch_shoreline_generation.py
-Generates shoreline datasets from scratch, without saving intermediate
-RGB images. This is the recommended method for producing training data for
-the self‑supervised CNN that learns geometry‑based embeddings.
+### batch_shoreline_from_meta.py
+Renders shorelines from metadata.
+- For each region:
+- loads bounds from JSON
+- renders a high‑resolution fractal tile
+- evaluates quality using FractalQualityEvaluator
+- extracts shoreline using EdgeDetector
+- saves the result into evaluated or rejected
+- moves the region metadata accordingly (if enabled)
 
 
 ### shorelines_from_img.py
@@ -98,13 +95,14 @@ renders.
 
 ## Filters and Fixers
 
-### fix_images_in_dataset.py
-Repairs or normalizes datasets where colormap metadata is missing or
-incorrect. Can rename files or adjust directory structure.
+### check_region_duplicates.py
+Detects and removes duplicate region metadata files (same bounds or same
+fractal coordinates). Useful after large tile searches.
 
-### remove_from_dataset.py
-Filters out low-quality or invalid images based on heuristics or metadata.
-Useful for cleaning large datasets before training.
+### compare_shoreline_tests.py
+Compares shoreline extraction setups (smoothing, dilation, max_iter, etc.).
+This was used during shoreline test analysis.
+Only setup 3 is now used in production.
 
 --------------------------------------------------------------------------
 
@@ -116,6 +114,9 @@ images.
 
 ### train_shoreline_autoencoder.py
 Trains the VAE used to learn latent structure in shoreline geometry.
+
+### train_wgan_gp.py
+Trains a WGAN‑GP model on RGB fractal images.
 
 --------------------------------------------------------------------------
 
@@ -129,35 +130,38 @@ Trains the VAE used to learn latent structure in shoreline geometry.
 
 --------------------------------------------------------------------------
 
-## Typical Workflow
+## CLI
+cli_batch_generation.py
+Runs batch pipelines using YAML configuration files.
+Reads the job_type field and dispatches to the correct batch script.
 
-1. Explore fractals:
+```
+python scripts/cli_batch_generation.py --config configs/shoreline/shoreline_test_03.yaml
+```
+--------------------------------------------------------------------------
+
+
+
+
+## Current Workflow
+
+1. Generate region metadata
 
 ``` bash
-python scripts/cli_dataset_builder.py --type mandelbrot --n 20
+python scripts/cli_batch_generation.py --config configs/region/region_cfg.yaml
 ```
 
-2. Generate RGB fractal datasets:
+2. Render shorelines from metadata (setup from test 3)
 ```bash
 python scripts/cli_batch_generation.py --config configs/rgb/rgb_cfg.yaml
 ```
 
-3. Generate shoreline datasets:
+3. Render RGB fractals from evaluated metadata
 ```bash
-python scripts/cli_batch_generation.py --config configs/shoreline/shoreline_cfg.yaml
+python scripts/cli_batch_generation.py --config configs/rgb/rgb_cfg.yaml
 ```
 
-4. Run multiple pipelines in sequence:
-```bash
-python scripts/cli_batch_generation.py --config cfg1.yaml cfg2.yaml cfg3.yaml
-```
-
-5. Clean datasets:
-```bash
-python scripts/filters_and_fixers/remove_from_dataset.py
-```
-
-Train models:
+4. Train models:
 ```bash
 python scripts/training_models/train_self_supervised_cnn.py
 ```

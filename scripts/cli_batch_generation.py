@@ -42,10 +42,11 @@ def resolve_colormap_group(cfg: dict) -> dict:
         )
 
     cfg["colormaps"] = COLORMAP_GROUPS[group_key]
+    return cfg
 
 
 def resolve_output_paths(cfg: dict, project_root: Path):
-    job_type = cfg["job_type"]
+    job_type = cfg.get("job_type", None)
 
     if job_type == "region":
         # region builder has ONE output-dir
@@ -84,9 +85,9 @@ def resolve_output_paths(cfg: dict, project_root: Path):
 
     elif job_type == "rgb":
         # rgb has ONE output-dir
-        if "output_dir" not in cfg:
-            raise ValueError("Config missing 'output_dir'.")
-        cfg["output_path"] = (project_root / cfg["output_dir"]).resolve()
+        if "rgb_root_dir" not in cfg:
+            raise ValueError("Config missing 'rgb_root_dir'.")
+        cfg["rgb_root_dir"] = (project_root / cfg["rgb_root_dir"]).resolve()
         return cfg
 
     else:

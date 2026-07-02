@@ -5,7 +5,7 @@ job_type: region
 fractal_type: mandelbrot
 batch_size: 5000
 min_depth: 1
-max_depth: 10
+max_depth: 9
 
 detector:
   canny_low: 50
