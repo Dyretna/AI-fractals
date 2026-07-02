@@ -251,17 +251,15 @@ CUSTOM_OUT = [
     "viridis_r",
 ]
 
-# Combine all redundant
-OUT_FILTERED_RGB = [
-    *GREYS,
-    *SEASONS,
-    *SINGLE_COLOR_GRADIENTS,
-    *TWO_COLOR_GRADIENTS,
-    *THREE_COLOR_GRADIENTS,
-    *CUSTOM_OUT,
-]
+# 1. BASE_SET = themed + discrete
+BASE_SET = set(THEMED) | set(DISCRETE_GRADIENTS)
 
-CURATED_COLORMAPS = [c for c in list(colormaps) if c not in OUT_FILTERED_RGB]
+# 2. Only keep those that exist in Matplotlib
+AVAILABLE = [c for c in colormaps if c in BASE_SET]
+
+# 3. Filter out custom exclusions
+CURATED_COLORMAPS = [c for c in AVAILABLE if c not in CUSTOM_OUT]
+
 
 if __name__ == "__main__":
     print("\n Curated colormaps: ", CURATED_COLORMAPS)
