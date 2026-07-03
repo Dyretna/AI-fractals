@@ -88,9 +88,7 @@ def main(dataset_path: Path, models_path: Path):
 if __name__ == "__main__":
     load_dotenv()
     PROJECT_ROOT = Path(os.getenv("PROJECT_ROOT"))
-    SHORELINES_DIR = (
-        PROJECT_ROOT / "dataset" / "shorelines" / "mandelbrot" / "256_256_iter256"
-    )
+    SHORELINES_DIR = PROJECT_ROOT / "dataset" / "shoreline" / "evaluated"
     MODELS_DIR = PROJECT_ROOT / "models"
     MODELS_DIR.mkdir(exist_ok=True, parents=True)
 
