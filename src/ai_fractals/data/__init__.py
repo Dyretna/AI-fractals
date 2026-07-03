@@ -7,7 +7,7 @@ from .colors import (
     THREE_COLOR_GRADIENTS,
     TWO_COLOR_GRADIENTS,
 )
-from .loaders import RGBDataset, ShorelineDataset
+from .loaders import RGBDataset, ShorelineDataset, ShorelineWithBoundsDataset
 from .region_builder import RegionBuilder
 
 __all__ = [
@@ -22,6 +22,7 @@ __all__ = [
     # loaders
     "RGBDataset",
     "ShorelineDataset",
+    "ShorelineWithBoundsDataset",
     # builders
     "RegionBuilder",
 ]

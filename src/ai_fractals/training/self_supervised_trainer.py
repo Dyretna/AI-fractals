@@ -13,10 +13,13 @@ The resulting encoder can be used for:
 - Similarity search and geometry-aware analysis
 """
 
+from typing import Optional
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from torch.utils.data import DataLoader
 
 # ---------------------------------------------------------------------------
 # NT-Xent Loss (SimCLR)
@@ -90,13 +93,13 @@ class SelfSupervisedTrainer:
 
     def __init__(
         self,
-        model,
-        dataloader,
+        model: nn.Module,
+        dataloader: DataLoader,
         augment_fn,
-        lr=1e-3,
-        epochs=50,
-        temperature=0.5,
-        device=None,
+        lr: float = 1e-3,
+        epochs: int = 50,
+        temperature: float = 0.5,
+        device: Optional[str] = None,
     ):
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         self.model = model.to(self.device)
