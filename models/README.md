@@ -18,7 +18,7 @@ The dataset used to train these models is not included in the repository, as it 
 
 ## Pretrained Models
 
-### Self-Supervised CNN (SimCLR-style)
+### Self-Supervised CNN (SimCLR-style) and CNN embeddings
 
 This directory contains the pretrained **self-supervised CNN** used to learn
 geometry-based embeddings from shoreline images. Unlike the autoencoder, which

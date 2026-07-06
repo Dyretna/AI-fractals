@@ -3,9 +3,45 @@
 ## **July 6, 2026**
 The testing of the VAE was successful. Even though the synthetic shorelines tend to form one large cluster in an empty region of the space, they still sit between the blue areas and well inside the manifold. There are small islands of real and synthetic points around the main cluster, but overall it looks fine.
 
-I then tested interpolation of both the CNN and VAE embeddings. The VAE interpolation produced an interesting transition. Will be interesting to try this and the GANs model!
+I then tested interpolation of both the CNN and VAE embeddings. The VAE interpolation produced an interesting transition. Will be interesting to try this on the GANs model!
 
 ![image](doc_assets/vae_interpolation.png)
+
+-------
+
+So… I kicked off a new conditional WGAN run. The whole pipeline works — data flows, embeddings attach correctly, conditioning is active — but the results are still abstract “modern art” rather than anything resembling fractals. Even with embeddings, the improvement is barely noticeable.
+
+Epoch 1, 10, 20, 40, 80 all show the same pattern: soft blobs, color patches, and vague structures that never settle into the sharp fractal geometry the model is supposed to learn. I killed it shortly afte rhere, maybe a bit early, but did not seem like a good idea to finnish "for science" in this case. we have the samples we need.
+
+epoch 1:
+
+![image](doc_assets/conditional_wgan_samples_20260706/samples_epoch_1.png)
+
+epoch 10:
+
+![image](doc_assets/conditional_wgan_samples_20260706/samples_epoch_10.png)
+
+epoch 20:
+
+![image](doc_assets/conditional_wgan_samples_20260706/samples_epoch_20.png)
+
+epoch 40:
+
+![image](doc_assets/conditional_wgan_samples_20260706/samples_epoch_40.png)
+
+epoch 80:
+
+![image](doc_assets/conditional_wgan_samples_20260706/samples_epoch_80.png)
+
+After discussing this with **the best co‑pilot ever made**, the plan for the next run is now so crystal clear that it is even clearer than the POTUS pool:
+
+1. Switching to a single colormap. Multiple cmaps introduce unnecessary style noise and force the critic to learn color variation instead of geometry. Twilight‑shifted only. Clean and consistent. it will be done overnight perhaps...
+
+2. Cleaning up the embeddings. I’ll look into how Youvan approached this — possibly PCA, maybe a small linear layer, maybe smoothing the manifold. The goal is to make the conditioning signal more stable and easier for the critic to interpret.
+
+3. Improving batch training. Larger batch size, stratified sampling, embedding‑sorted batches, and maybe increasing n_critic to 4 or 5. The idea is to stop feeding the critic chaotic batches and instead give it structured, consistent information.
+
+So the plan is to run each of these improvements as separate training sessions. That way it’s actually possible to see whether each change does anything measurable, instead of mixing everything at once and guessing. I’ll save the trainer state for every run so I can compare behaviour between them. The rest of the pipeline doesn’t need major changes right now — but I’ll adjust things if any of the runs reveal something unexpected.
 
 
 ## **July 3, 2026**

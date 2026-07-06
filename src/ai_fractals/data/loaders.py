@@ -179,3 +179,59 @@ class ShorelineWithBoundsDataset(Dataset):
             "  fields:         shoreline + bounds",
         ]
         return "\n".join(rows)
+
+
+class RGBWithEmbeddingDataset(Dataset):
+    """
+    Dataset loader for RGB fractal images paired with precomputed CNN embeddings.
+
+    This dataset assumes a single .pt file containing a tensor of shape (N, embed_dim),
+    where each row corresponds to the embedding of the RGB image at the same index.
+
+    Returns:
+        (rgb_tensor, embedding_tensor)
+    """
+
+    def __init__(self, rgb_root: Path, embedding_path: Path, transform=None):
+        self.rgb_root = Path(rgb_root)
+        self.embedding_path = Path(embedding_path)
+        self.transform = transform
+
+        # Collect RGB PNGs
+        self.rgb_paths = sorted(self.rgb_root.rglob("*.png"))
+
+        # Load embedding tensor
+        self.embeddings = torch.load(self.embedding_path)
+
+        if len(self.embeddings) != len(self.rgb_paths):
+            raise ValueError(
+                f"Embedding count ({len(self.embeddings)}) does not match "
+                f"image count ({len(self.rgb_paths)})."
+            )
+
+    def __len__(self):
+        return len(self.rgb_paths)
+
+    def __getitem__(self, idx):
+        # Load RGB image
+        png_path = self.rgb_paths[idx]
+        img = Image.open(png_path).convert("RGB")
+
+        if self.transform:
+            img = self.transform(img)
+
+        # Load embedding at same index
+        emb = self.embeddings[idx]
+
+        return img, emb
+
+    def __str__(self):
+        rows = [
+            "RGBWithEmbeddingDataset",
+            f"  rgb_root:       {self.rgb_root}",
+            f"  embedding_path: {self.embedding_path}",
+            f"  count:          {len(self.rgb_paths)}",
+            f"  transform:      {self.transform.__class__.__name__ if self.transform else None}",
+            "  fields:         rgb + embedding",
+        ]
+        return "\n".join(rows)
