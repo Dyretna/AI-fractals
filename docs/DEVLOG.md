@@ -1,5 +1,45 @@
 # Devlog
 
+## **July 6, 2026**
+The testing of the VAE was successful. Even though the synthetic shorelines tend to form one large cluster in an empty region of the space, they still sit between the blue areas and well inside the manifold. There are small islands of real and synthetic points around the main cluster, but overall it looks fine.
+
+I then tested interpolation of both the CNN and VAE embeddings. The VAE interpolation produced an interesting transition. Will be interesting to try this and the GANs model!
+
+![image](doc_assets/vae_interpolation.png)
+
+
+## **July 3, 2026**
+A lot has happened since the last entry, and several parts of the fractal pipeline have now matured into their next iteration.
+
+I decided to settle on the shoreline detector without smoothing. After running multiple tests, it became clear that Gaussian blur consistently removed thin edges that the evaluator depends on. The “liberal Canny” setup preserves more structure, increases pass‑rate, and produces shorelines that are more useful for downstream geometry learning. In hindsight, I could have tested other smoothing methods that might have preserved thin lines — oh well, maybe later.
+
+I generated a large batch of new metadata using both 6‑tile and 7‑tile region configs. Mixing tile sizes increases geometric variety: 7×7 tiles give deeper zooms and smaller bounds, while 6×6 tiles produce more mid‑scale regions. This combination should help both the CNN and VAE learn a broader manifold. After running the full shoreline‑evaluation pipeline, I now have over **10,000 accepted fractal regions**, sorted into evaluated/rejected sets. I might train a few more 5×5 regions as well, since some older ones are still saved.
+
+I wrote a new RGB batch generator and produced most of the RGB dataset for GAN training. Around 3,000 regions remain — I’ll just let it run later when AFK.
+
+With the expanded shoreline dataset, I retrained the self‑supervised CNN. The new model is trained entirely on the updated “evaluated” shorelines and shows cleaner clusters and more stable UMAP/HDBSCAN structure. This embedding space will be used for GAN conditioning and similarity search.
+
+Here’s a map of the clusters from the notebook:
+
+![image](doc_assets/Umap_hdbscan_example.png)
+
+The clusters themselves won’t be used directly, but they’re a good sanity check that the embedding space actually works. I didn’t bother tuning HDBSCAN parameters here — this was just a quick visualization pass.
+
+The biggest news is the conditional VAE. The VAE receives both the shoreline mask and the fractal bounds, allowing it to learn a position‑aware latent space. I added a new ShorelineVAE model, a dedicated trainer, and a new training script. All data loaders were updated to support shoreline + region metadata, including robust JSON matching via compact_id.
+
+The first full VAE run (60 epochs) completed successfully. Loss dropped smoothly from ~30k down to ~15.9k.
+
+Before moving on to GAN conditioning, I need to check whether the VAE actually learned the “shape” of all shoreline images. The UMAP plot above is a good example of this shape. The **latent space** is like the coordinate system where the model places images as points. Every shoreline becomes a dot somewhere in this space. Similar shorelines end up close together, different ones end up farther apart. If you plot all these dots, they form a kind of cloud — and that cloud is what is called a **manifold**. It’s basically the “shape” formed by all valid shoreline geometries.
+
+A good VAE should learn this shape. That means:
+- if I generate a synthetic shoreline, its dot should land inside the cloud
+- if I interpolate between two shorelines, the dots should form a smooth path between them
+- if I sample a random point, the decoded image should still look like a real shoreline
+
+In other words: synthetic shorelines should appear **in the gaps between real ones**, but still **on the same overall shape**. They shouldn’t drift off into some strange corner, and they shouldn’t collapse into one tiny cluster. If they do, the model hasn’t learned the real geometry.
+
+So the next step is simple: generate synthetic shorelines, run them through the frozen CNN, and plot them together with the real embeddings. If the synthetic ones blend in naturally — same neighborhoods, same structure — then the VAE is good enough for GAN conditioning. If they land outside the cloud, I’ll know the model needs more variation or a deeper architecture.
+
 ## **July 1st, 2026**
 While generating shoreline metadata, I realized I needed a clearer way to understand how the evaluator behaves inside the shoreline pipeline. The tile‑search stage already does some evaluation, but it’s intentionally forgiving: if no tile passes, it simply chooses the best tile and goes deeper, explores the next zoom level, and picks a random candidate among the accepted ones. That gives variation, which is good for dataset diversity.
 
@@ -156,7 +196,7 @@ The first version used a standalone augmenter that saved every augmented image t
 
 ---
 
-### The First CNN and VAE — “Holy shit, it works”
+### The First CNN and clustering — “Holy shit, it works”
 
 This was a fun moment.
 felt like gettin' learnt with Ricky:
