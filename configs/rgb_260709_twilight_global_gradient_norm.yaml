@@ -1,15 +1,15 @@
 # relative paths
 region_evaluated_dir: dataset/region/evaluated
-output_dir: dataset/rgb/mandelbrot/curatedcmaps_res1024_iter1024
+output_dir: dataset/rgb/mandelbrot/twilight_global_gradnorm_iter2048
 job_type: rgb
 fractal_type: mandelbrot
-colormap_group: curated_colormaps
+colormap: twilight_shifted
 
 hires_gen:
   width: 1024
   height: 1024
-  max_iter: 1024
-  normalize_mode: local
-  normalize_gamma: # only for global
+  max_iter: 2048
+  normalize_mode: global
+  normalize_gamma: 0.5
   use_supersampling: true
   device: cuda

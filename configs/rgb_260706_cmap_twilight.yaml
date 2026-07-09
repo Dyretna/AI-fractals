@@ -9,5 +9,7 @@ hires_gen:
   width: 1024
   height: 1024
   max_iter: 1024
+  normalize_mode: local
+  normalize_gamma: # only for global
   use_supersampling: true
   device: cuda

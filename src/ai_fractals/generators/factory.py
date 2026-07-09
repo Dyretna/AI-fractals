@@ -1,4 +1,5 @@
 # ai_fractals/generators/factory.py
+from typing import Optional
 
 from .mandelbrot import MandelbrotCPU, MandelbrotGPU
 
@@ -21,6 +22,8 @@ def create_generator(
     height: int,
     max_iter: int,
     colormap: str,
+    normalize_mode: str,
+    normalize_gamma: Optional[float],
     use_supersampling: bool,
     device: str,
 ):
@@ -46,5 +49,7 @@ def create_generator(
         height=height,
         max_iter=max_iter,
         colormap=colormap,
+        normalize_mode=normalize_mode,
+        normalize_gamma=normalize_gamma,
         use_supersampling=use_supersampling,
     )

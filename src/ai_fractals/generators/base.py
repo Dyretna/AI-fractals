@@ -22,6 +22,8 @@ class BaseFractalGenerator(ABC):
         height=1024,
         max_iter=1024,
         colormap="twilight_shifted",
+        normalize_mode="global",
+        normalize_gamma=0.5,
         use_supersampling=True,
         device="cpu",
     ):
@@ -30,6 +32,8 @@ class BaseFractalGenerator(ABC):
         self.max_iter = max_iter
         self.colormap = colormap
         self.cmap = plt.get_cmap(colormap)
+        self.normalize_mode = normalize_mode
+        self.normalize_gamma = normalize_gamma
         self.use_supersampling = use_supersampling
         self.device = device
 
@@ -49,8 +53,13 @@ class BaseFractalGenerator(ABC):
     def generate(
         self, xmin: float, xmax: float, ymin: float, ymax: float
     ) -> np.ndarray:
-        """RGB uint8 for display - article Section 4.1"""
-        img = self._normalize_RGB(self._compute(xmin, xmax, ymin, ymax))
+        """RGB uint8 for display"""
+
+        if self.normalize_mode == "global":
+            img = self._normalize_global(self._compute(xmin, xmax, ymin, ymax))
+        else:
+            img = self._normalize_local(self._compute(xmin, xmax, ymin, ymax))
+
         if self.use_supersampling:
             img = self._supersample(img)
         return img
@@ -104,22 +113,27 @@ class BaseFractalGenerator(ABC):
 
         return xmin, xmax, ymin, ymax
 
-    def _normalize_RGB(self, img: np.ndarray) -> np.ndarray:
-        """normalizes and applies to 0-1 for colormap. converts to uint8 RGB"""
+    def _normalize_global(self, img: np.ndarray) -> np.ndarray:
         x = img.astype(np.float32)
+        mn = x.min()
+        mx = x.max()
+        spread = max(mx - mn, 1e-6)
+        x = (x - mn) / spread
 
-        # local contrast: diff between percentiles
+        # contrast boost via gamma
+        x = x**self.normalize_gamma
+
+        colored = self.cmap(x)
+        return (colored[:, :, :3] * 255).astype(np.uint8)
+
+    def _normalize_local(self, img: np.ndarray) -> np.ndarray:
+        x = img.astype(np.float32)
         p1 = np.percentile(x, 1)
         p99 = np.percentile(x, 99)
         spread = max(p99 - p1, 1e-6)
-
-        # adaptive gamma:
         gamma = np.clip(1.0 + (200.0 / spread), 0.7, 2.5)
-
-        # normalise
         x = x / self.max_iter
         x = x ** (1.0 / gamma)
-
         colored = self.cmap(x)
         return (colored[:, :, :3] * 255).astype(np.uint8)
 

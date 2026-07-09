@@ -60,7 +60,7 @@ def run_rgb_batch(cfg: dict) -> None:
     cmap = cfg["colormap"]
     fractal_type = cfg["fractal_type"]
 
-    log.info(pretty_cfg(cfg), "\n")
+    log.info("\n" + pretty_cfg(cfg) + "\n")
 
     # -----------------------------------------------------------
     # Load existing CIDs (missing-file detection)
@@ -84,6 +84,12 @@ def run_rgb_batch(cfg: dict) -> None:
         f"({existing_count / total_regions * 100:.2f}%)\n"
     )
 
+    hires_rgb: BaseFractalGenerator = create_generator(
+        fractal_type=fractal_type,
+        colormap=cmap,
+        **cfg["hires_gen"],
+    )
+
     for region_path in tqdm(region_paths, desc="regions", ncols=80):
         meta = json.load(open(region_path))
 
@@ -95,16 +101,7 @@ def run_rgb_batch(cfg: dict) -> None:
         if cid in existing_cids:
             continue
 
-        # -------------------------------------------------------
         # Render
-        # -------------------------------------------------------
-
-        hires_rgb: BaseFractalGenerator = create_generator(
-            fractal_type=fractal_type,
-            colormap=cmap,
-            **cfg["hires_gen"],
-        )
-
         rgb = hires_rgb.generate(xmin, xmax, ymin, ymax)
         rgb = np.clip(rgb, 0, 255).astype(np.uint8)
         img = Image.fromarray(rgb, mode="RGB")
