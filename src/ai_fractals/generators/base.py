@@ -10,8 +10,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
-from ai_fractals.logging_config import get_logger
-
 
 class BaseFractalGenerator(ABC):
     """Abstract base class for fractal generators."""
@@ -40,9 +38,8 @@ class BaseFractalGenerator(ABC):
             torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
         )
 
-        self.log = get_logger(
-            f"{self.__class__.__module__}.{id(self)}", level=logging.WARNING
-        )
+        self.log = logging.getLogger(__name__)
+
         self.log.info(f"using device: {self.device}")
 
     # ------------------------------------------------------------

@@ -1,5 +1,41 @@
 # Devlog
 
+## **July 9, 2026**
+I generated a new RGB batch and ran a WGAN-GP training session using the exact same parameters as before — the only difference was the dataset. This time, all fractals were rendered using the twilight_shifted colormap, and there is quite an improvement! The model learns faster, stabilizes earlier, and produces far cleaner gradients.
+
+epoch 1:
+
+![image](doc_assets/20260708_samples_wgan_twilight/samples_epoch_1.png)
+
+epoch 10:
+
+![image](doc_assets/20260708_samples_wgan_twilight/samples_epoch_10.png)
+
+epoch 20:
+
+![image](doc_assets/20260708_samples_wgan_twilight/samples_epoch_20.png)
+
+epoch 50:
+
+![image](doc_assets/20260708_samples_wgan_twilight/samples_epoch_50.png)
+
+...however, epoch 50 is clearly the peak — beyond that, improvements flatten out.
+
+epoch 100:
+
+![image](doc_assets/20260708_samples_wgan_twilight/samples_epoch_100.png)
+
+epoch 200:
+
+![image](doc_assets/20260708_samples_wgan_twilight/samples_epoch_200.png)
+
+Right now, the RGB generator maps color directly to the raw iteration count. But iteration count changes with zoom depth — deeper zooms require higher max_iter, which shifts the entire gradient. That means the GAN sees different color distributions depending on depth, even when the underlying geometry is similar. The critic ends up learning color variation that has nothing to do with fractal structure.
+
+So the gradient needs to be normalized. The GAN should always receive the same color profile, regardless of depth or max_iter. Twilight_shifted helps, and it makes me laugh thinking about how hard the model had to struggle trying to learn 77 colormaps haha... yez! So normalizing the gradient is the next step before we move on to batching and embedding improvements. I think i will also make the rgb config have bigger max_iter,set to 2048, since the deeper fractals seems to have poorer quality.
+
+Since this is the case, I will simplify the RGB batch script again and not iterate over colormaps. It will be set in the config, since I don’t see us experimenting with different colormaps for quite some time. Also, the whole dynamic output path makes the code convoluted and breaks now that I need to save based on colormap — it will be cleaned up and moved into the config as well. It has been fun testing the different colormaps just for aesthetic exploration, but we’ll need a separate script for that later.
+
+
 ## **July 6, 2026**
 The testing of the VAE was successful. Even though the synthetic shorelines tend to form one large cluster in an empty region of the space, they still sit between the blue areas and well inside the manifold. There are small islands of real and synthetic points around the main cluster, but overall it looks fine.
 
@@ -15,23 +51,23 @@ Epoch 1, 10, 20, 40, 80 all show the same pattern: soft blobs, color patches, an
 
 epoch 1:
 
-![image](doc_assets/conditional_wgan_samples_20260706/samples_epoch_1.png)
+![image](doc_assets/20260706_samples_conditional_wgan/samples_epoch_1.png)
 
 epoch 10:
 
-![image](doc_assets/conditional_wgan_samples_20260706/samples_epoch_10.png)
+![image](doc_assets/20260706_samples_conditional_wgan/samples_epoch_10.png)
 
 epoch 20:
 
-![image](doc_assets/conditional_wgan_samples_20260706/samples_epoch_20.png)
+![image](doc_assets/20260706_samples_conditional_wgan/samples_epoch_20.png)
 
 epoch 40:
 
-![image](doc_assets/conditional_wgan_samples_20260706/samples_epoch_40.png)
+![image](doc_assets/20260706_samples_conditional_wgan/samples_epoch_40.png)
 
 epoch 80:
 
-![image](doc_assets/conditional_wgan_samples_20260706/samples_epoch_80.png)
+![image](doc_assets/20260706_samples_conditional_wgan/samples_epoch_80.png)
 
 After discussing this with **the best co‑pilot ever made**, the plan for the next run is now so crystal clear that it is even clearer than the POTUS pool:
 
@@ -152,25 +188,25 @@ I finally got a WGAN‑GP model running today. The output images are 128×128. I
 So I dropped the resolution to 128, added the essential logging I needed — sample images, checkpoints (huge files, half a gig each, and I didn’t even use them). But things started happening. Look at this:
 
 epoch 1:
-![image](doc_assets/first_wgan_samples_20260629/samples_epoch_1.png)
+![image](doc_assets/20260629_samples_wgan/samples_epoch_1.png)
 
 epoch 10:
-![image](doc_assets/first_wgan_samples_20260629/samples_epoch_10.png)
+![image](doc_assets/20260629_samples_wgan/samples_epoch_10.png)
 
 epoch 20:
-![image](doc_assets/first_wgan_samples_20260629/samples_epoch_20.png)
+![image](doc_assets/20260629_samples_wgan/samples_epoch_20.png)
 
 epoch 40:
-![image](doc_assets/first_wgan_samples_20260629/samples_epoch_40.png)
+![image](doc_assets/20260629_samples_wgan/samples_epoch_40.png)
 
 epoch 80:
-![image](doc_assets/first_wgan_samples_20260629/samples_epoch_80.png)
+![image](doc_assets/20260629_samples_wgan/samples_epoch_80.png)
 
 epoch 120:
-![image](doc_assets/first_wgan_samples_20260629/samples_epoch_120.png)
+![image](doc_assets/20260629_samples_wgan/samples_epoch_120.png)
 
 epoch 180:
-![image](doc_assets/first_wgan_samples_20260629/samples_epoch_180.png)
+![image](doc_assets/20260629_samples_wgan/samples_epoch_180.png)
 
 I stopped at epoch 180. I had planned to go to 200, but honestly, the model had already flattened out around epoch 80. Still, it was really fun to see it working. But it’s obvious that the GAN needs to understand structure better. Luckily, we already have a VAE model that can pair our dataset of roughly 5000 images with structural embeddings.
 

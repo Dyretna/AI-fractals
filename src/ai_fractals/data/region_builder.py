@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import json
+import logging
 from datetime import datetime
 from pathlib import Path
 
 from tqdm import tqdm
 
 from ai_fractals.analysis import FractalQualityEvaluator
-from ai_fractals.logging_config import get_logger
 from ai_fractals.search.tile_search import BaseTileSearch
 
 
@@ -80,7 +80,7 @@ class RegionBuilder:
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # logging
-        self.log = get_logger(name="RegionBuilder")
+        self.log = logging.getLogger(__name__)
 
     # ----------------------------------------------------------------------
     # Public API

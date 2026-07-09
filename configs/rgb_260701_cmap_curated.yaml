@@ -1,0 +1,13 @@
+# relative paths
+region_evaluated_dir: dataset/region/evaluated
+output_dir: dataset/rgb/mandelbrot/curatedcmaps_res1024_iter1024
+job_type: rgb
+fractal_type: mandelbrot
+colormap_group: curated_colormaps
+
+hires_gen:
+  width: 1024
+  height: 1024
+  max_iter: 1024
+  use_supersampling: true
+  device: cuda

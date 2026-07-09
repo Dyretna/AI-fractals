@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 import argparse
+import logging
 import os
+import sys
+from datetime import datetime
 from pathlib import Path
 
 import yaml
@@ -9,40 +12,24 @@ from batch_generation.batch_rgb_from_meta import run_rgb_batch
 from batch_generation.batch_shoreline_from_meta import run_shoreline_batch
 from dotenv import load_dotenv
 
-from ai_fractals.data import (
-    CURATED_COLORMAPS,
-    DISCRETE_GRADIENTS,
-    THEMED,
-    THREE_COLOR_GRADIENTS,
-)
+# ---------------------------------------------------------------------------
+# Setup environment and Logging
+# ---------------------------------------------------------------------------
+
+load_dotenv()
+ROOT = Path(os.getenv("PROJECT_ROOT"))
+sys.path.append(str(ROOT))
+
+from scripts.logging_setup import setup_logging  # noqa
+
+ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+setup_logging(redirect_path=ROOT / "logs" / f"{ts}_batch.log")
+log = logging.getLogger(__name__)
+
 
 # -----------------------------------------------------------------
-# Handling and colormaps to insert into cfg dict
+# Handling paths to insert into cfg dict
 # -----------------------------------------------------------------
-
-COLORMAP_GROUPS = {
-    "curated_colormaps": CURATED_COLORMAPS,
-    "discrete_gradients": DISCRETE_GRADIENTS,
-    "three_color_gradients": THREE_COLOR_GRADIENTS,
-    "themed": THEMED,
-}
-
-
-def resolve_colormap_group(cfg: dict) -> dict:
-    """Resolve 'colormap_group' into a concrete 'colormaps' list."""
-    group_key = cfg.get("colormap_group", None)
-
-    if not group_key:
-        return cfg  # nothing to do
-
-    if group_key not in COLORMAP_GROUPS:
-        raise ValueError(
-            f"Unknown colormap_group '{group_key}'. "
-            f"Available groups: {list(COLORMAP_GROUPS.keys())}"
-        )
-
-    cfg["colormaps"] = COLORMAP_GROUPS[group_key]
-    return cfg
 
 
 def resolve_output_paths(cfg: dict, project_root: Path):
@@ -84,12 +71,14 @@ def resolve_output_paths(cfg: dict, project_root: Path):
         return cfg
 
     elif job_type == "rgb":
-        # rgb has ONE output-dir
-        if "rgb_root_dir" not in cfg:
-            raise ValueError("Config missing 'rgb_root_dir'.")
-        cfg["rgb_root_dir"] = (project_root / cfg["rgb_root_dir"]).resolve()
-        return cfg
+        if "output_dir" not in cfg:
+            raise ValueError("Config missing 'output_dir'.")
 
+        cfg["region_evaluated_dir"] = Path(
+            project_root / cfg["region_evaluated_dir"]
+        ).resolve()
+        cfg["output_dir"] = (project_root / cfg["output_dir"]).resolve()
+        return cfg
     else:
         raise ValueError(f"Unknown job_type: {job_type}")
 
@@ -132,11 +121,7 @@ Examples:
     if job_type is None:
         raise ValueError("Config file must contain a 'job_type' field.")
 
-    if job_type == "rgb":
-        cfg = resolve_colormap_group(cfg)
-
     # set output path
-    load_dotenv()
     project_root = Path(os.getenv("PROJECT_ROOT"))
     cfg = resolve_output_paths(cfg, project_root)
 

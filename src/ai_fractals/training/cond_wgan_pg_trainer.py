@@ -29,6 +29,7 @@ After training:
 """
 
 import copy
+import logging
 import os
 import platform
 from pathlib import Path
@@ -39,7 +40,6 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
 
-from ..logging_config import get_logger
 from ..models.gans_interface import CriticBase, GeneratorBase
 
 
@@ -108,13 +108,9 @@ class WganGpTrainer:
             self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
         # logger
-        log_dir = Path("logs")
-        log_dir.mkdir(parents=True, exist_ok=True)
-        self.train_log_path = log_dir / "wgan_train.log"
-        self.logger = get_logger(name="WGAN_trainer", redirect_path=self.train_log_path)
-
+        self.log = logging.getLogger(__name__)
         self._system_specs()
-        self.logger.info(self)
+        self.log.info(self)
 
     def _sample_noise(self, batch_size: int) -> torch.Tensor:
         return torch.randn(batch_size, self.noise_dim, device=self.device)
@@ -173,7 +169,7 @@ class WganGpTrainer:
 
                 # Batch progress (var 10:e batch)
                 if batch_idx % 10 == 0:
-                    self.logger.info(
+                    self.log.info(
                         f"Epoch {epoch + 1}/{self.epochs} | "
                         f"Batch {batch_idx}/{len(self.dataloader)} | "
                         f"Critic loss: {loss_c.item():.4f} | "
@@ -186,7 +182,7 @@ class WganGpTrainer:
             if self.checkpoint_dir is not None:
                 self._checkpoint_per_epoch(epoch)
 
-            self.logger.info(
+            self.log.info(
                 f"[EPOCH DONE] {epoch + 1}/{self.epochs} | "
                 f"Critic loss: {loss_c.item():.4f} | "
                 f"Generator loss: {loss_g.item():.4f}"
@@ -276,7 +272,7 @@ class WganGpTrainer:
             mem = torch.cuda.get_device_properties(0).total_memory // (1024**2)
             rows.append(f"GPU memory: {mem} MB")
         rows.append("")
-        self.logger.info("\n".join(rows))
+        self.log.info("\n".join(rows))
 
     def __str__(self):
         header = "\n" + "=" * 50 + f"\n{self.__class__.__name__}\n" + "=" * 50
@@ -294,7 +290,7 @@ class WganGpTrainer:
         # --- blocks ---
         block("generator", self.generator)
         block("critic", self.critic)
-        block("dataloader", self.dataloader)
+        block("dataset", self.dataloader.dataset)
 
         # --- trainer config ---
         rows.append(f"  device:         {self.device}")

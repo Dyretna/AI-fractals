@@ -23,10 +23,7 @@ from tqdm import tqdm
 
 from ai_fractals.analysis import FractalQualityEvaluator
 from ai_fractals.generators import create_generator
-from ai_fractals.logging_config import get_logger
 from ai_fractals.processing import EdgeDetector
-
-logger = get_logger(name="Shoreline_evaluation")
 
 
 def run_shoreline_batch(cfg: dict) -> None:

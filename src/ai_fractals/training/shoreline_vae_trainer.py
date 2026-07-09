@@ -19,6 +19,7 @@ After training:
 - Use embeddings as conditioning for GAN-based RGB fractal generation
 """
 
+import logging
 from typing import Optional
 
 import torch
@@ -80,6 +81,10 @@ class VAETrainer:
         self.epochs = epochs
         self.opt = optim.Adam(self.model.parameters(), lr=lr)
 
+        # logger
+        self.log = logging.getLogger(__name__)
+        self.log.info(self)
+
     def train(self):
         self.model.train()
 
@@ -106,7 +111,7 @@ class VAETrainer:
                 total_loss += loss.item()
 
             avg_loss = total_loss / len(self.dataloader)
-            print(f"Epoch {epoch + 1}/{self.epochs} - loss={avg_loss:.4f}")
+            self.log.info(f"Epoch {epoch + 1}/{self.epochs} - loss={avg_loss:.4f}")
 
     def save(self, path: str):
         torch.save(self.model.state_dict(), path)

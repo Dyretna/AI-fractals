@@ -7,10 +7,13 @@ The trainer handles:
 - critic updates with gradient penalty on (image, embedding)
 - generator updates conditioned on embeddings
 - Wasserstein distance tracking
-- logging and checkpointing
+- checkpointing
 """
 
+import logging
 import os
+import sys
+from datetime import datetime
 from pathlib import Path
 
 import torchvision.transforms as T
@@ -18,14 +21,28 @@ from dotenv import load_dotenv
 from torch.utils.data import DataLoader
 
 from ai_fractals.data import RGBWithEmbeddingDataset
-from ai_fractals.logging_config import get_logger
 from ai_fractals.models import WganGpCritic, WganGpGenerator
 from ai_fractals.training import WganGpTrainer
 
+# ---------------------------------------------------------------------------
+# Setup environment and Logging
+# ---------------------------------------------------------------------------
+
+load_dotenv()
+ROOT = Path(os.getenv("PROJECT_ROOT"))
+sys.path.append(str(ROOT))
+
+from scripts.logging_setup import setup_logging  # noqa
+
+ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+setup_logging(redirect_path=ROOT / "logs" / f"{ts}_wgan_train.log")
+log = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+
 
 def main(dataset_path: Path, embed_path: Path, models_path: Path):
-    logger = get_logger("train_wgan_gp_conditional")
-    logger.info("Starting conditional WGAN-GP training script")
+    log.info("Starting conditional WGAN-GP training script")
 
     transform = T.Compose(
         [
@@ -61,12 +78,12 @@ def main(dataset_path: Path, embed_path: Path, models_path: Path):
         n_critic=3,
         lambda_gp=2.5,
         ema_decay=0.999,
-        device=None,
+        device=None,  # auto
         sample_dir=Path(models_path / "wgan_samples"),
         checkpoint_dir=Path(models_path / "wgan_checkpoints"),
     )
 
-    logger.info("Beginning training...")
+    log.info("Beginning training...")
     trainer.train()
 
     trainer.save(
@@ -74,7 +91,7 @@ def main(dataset_path: Path, embed_path: Path, models_path: Path):
         critic_path=models_path / "wgan_cond_critic.pth",
         ema_path=models_path / "wgan_cond_generator_ema.pth",
     )
-    logger.info(f"Training complete. Models saved to {models_path}")
+    log.info(f"Training complete. Models saved to {models_path}")
 
 
 if __name__ == "__main__":
@@ -82,7 +99,9 @@ if __name__ == "__main__":
     PROJECT_ROOT = Path(os.getenv("PROJECT_ROOT"))
 
     # input
-    DATASET_DIR = PROJECT_ROOT / "dataset" / "rgb" / "mandelbrot"
+    DATASET_DIR = (
+        PROJECT_ROOT / "dataset" / "rgb" / "mandelbrot" / "twilight_res1024_iter1024"
+    )
     EMBED_PATH = PROJECT_ROOT / "models" / "cnn_embeddings.pt"
 
     # output

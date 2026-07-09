@@ -13,7 +13,10 @@ Conditioning note:
     shoreline generation.
 """
 
+import logging
 import os
+import sys
+from datetime import datetime
 from pathlib import Path
 
 import torchvision.transforms as T
@@ -21,15 +24,29 @@ from dotenv import load_dotenv
 from torch.utils.data import DataLoader
 
 from ai_fractals.data import ShorelineWithBoundsDataset
-from ai_fractals.logging_config import get_logger
 from ai_fractals.models import ShorelineVAE
 from ai_fractals.training import VAETrainer
+
+# ---------------------------------------------------------------------------
+# Setup environment and Logging
+# ---------------------------------------------------------------------------
+
+load_dotenv()
+ROOT = Path(os.getenv("PROJECT_ROOT"))
+sys.path.append(str(ROOT))
+
+from scripts.logging_setup import setup_logging  # noqa
+
+ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+setup_logging(redirect_path=ROOT / "logs" / f"{ts}_shoreline_vae_train.log")
+log = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
 
 
 def main(region_root: Path, shoreline_root: Path, models_path: Path):
     # --- init logging ---
-    logger = get_logger("train_shoreline_vae")
-    logger.info("Starting ShorelineVAE training script")
+    log.info("Starting ShorelineVAE training script")
 
     # --- dataset loading ---
     transform = T.Compose(
@@ -58,18 +75,18 @@ def main(region_root: Path, shoreline_root: Path, models_path: Path):
     )
 
     # --- log objects ---
-    logger.info("\n" + str(dataset) + "\n")
-    logger.info("\n" + str(model) + "\n")
-    logger.info("\n" + str(trainer) + "\n")
+    log.info("\n" + str(dataset) + "\n")
+    log.info("\n" + str(model) + "\n")
+    log.info("\n" + str(trainer) + "\n")
 
     # --- training ---
-    logger.info("Beginning training...")
+    log.info("Beginning training...")
     trainer.train()
 
     # --- save ---
     out_path = models_path / "shoreline_vae.pth"
     trainer.save(out_path)
-    logger.info(f"Training complete. Model saved to {out_path.name}")
+    log.info(f"Training complete. Model saved to {out_path.name}")
 
 
 if __name__ == "__main__":

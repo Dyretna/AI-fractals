@@ -201,7 +201,7 @@ class RGBWithEmbeddingDataset(Dataset):
         self.rgb_paths = sorted(self.rgb_root.rglob("*.png"))
 
         # Load embedding tensor
-        self.embeddings = torch.load(self.embedding_path)
+        self.embeddings = torch.load(self.embedding_path, weights_only=True)
 
         if len(self.embeddings) != len(self.rgb_paths):
             raise ValueError(
