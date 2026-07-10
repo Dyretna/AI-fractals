@@ -31,5 +31,7 @@ tile_gen:
   width: 256
   height: 256
   max_iter: 1024
+  normalize_mode:   # only for rgb
+  normalize_gamma:  # only for rgb
   use_supersampling: false
   device: cuda

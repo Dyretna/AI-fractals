@@ -1,0 +1,37 @@
+# relative path
+output_dir: dataset/region/raw/
+
+job_type: region
+fractal_type: mandelbrot
+batch_size: 500
+min_depth: 1
+max_depth: 9
+
+detector:
+  canny_low: 50
+  canny_high: 150
+  apply_smoothing: true
+  smoothing_method: gaussian
+  smoothing_kernel: 5
+  smoothing_sigma: 0.0
+
+evaluator:
+  quality_threshold: 0.3
+  min_edge_ratio: 0.03
+  max_edge_ratio: 0.45
+  min_inside_ratio: 0.0001
+  max_inside_ratio: 0.9999
+
+search_strategy: tile_jittered
+search_params:
+  n_tiles: 6
+  top_k: 5
+
+tile_gen:
+  width: 256
+  height: 256
+  max_iter: 1024
+  normalize_mode:   # only for rgb
+  normalize_gamma:  # only for rgb
+  use_supersampling: false
+  device: cuda

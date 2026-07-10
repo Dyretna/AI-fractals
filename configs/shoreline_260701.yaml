@@ -9,6 +9,16 @@ shoreline_rejected_dir: dataset/shoreline/rejected/
 job_type: shoreline
 fractal_type: mandelbrot
 
+hires_gen:
+  width: 512
+  height: 512
+  max_iter: 1024
+  normalize_mode: # only for rgb
+  normalize_gamma: # only for rgb
+  use_supersampling: false
+  device: cuda
+
+
 detector:
   canny_low: 30
   canny_high: 200
@@ -23,10 +33,3 @@ evaluator:
   max_edge_ratio: 0.99
   min_inside_ratio: 0.0001
   max_inside_ratio: 0.9999
-
-hires_gen:
-  width: 512
-  height: 512
-  max_iter: 1024
-  use_supersampling: false
-  device: cuda

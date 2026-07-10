@@ -88,7 +88,7 @@ class RegionBuilder:
 
     def run(self, n_regions: int):
         remaining = n_regions
-        pbar = tqdm(total=n_regions, desc=f"Generating {self.fractal_type}")
+        pbar = tqdm(total=n_regions, desc=f"Generating {self.fractal_type}", ncols=80)
 
         while remaining > 0:
             saved = self.step()  # returns 1 if saved, else 0
@@ -159,8 +159,6 @@ class RegionBuilder:
         with open(path, "w") as f:
             json.dump(meta, f, indent=2)
 
-        self.log.info(f"Saved region: {name}")
-
     def __str__(self):
         header = "\n" + "=" * 50 + f"\n{self.__class__.__name__}\n" + "=" * 50
         rows = [header]
@@ -174,13 +172,17 @@ class RegionBuilder:
             rows.append(indent(str(obj)))
             rows.append("")
 
+        rows.append(f"  output_dir:     {self.output_dir}")
+        rows.append(f"  fractal_type:   {self.fractal_type}")
+        rows.append(f"  max_iter:       {self.max_iter}")
+        rows.append(f"  min_depth:      {self.save_min_depth}")
+        rows.append(f"  max_depth:      {self.save_max_depth}\n")
+
         block("tile_search", self.tile_search)
+        block("generator", self.tile_search.tile_gen)
         block("evaluator", self.evaluator)
         block("edge_detector", self.evaluator.detector)
 
-        rows.append(f"  fractal_type:   {self.fractal_type}")
-        rows.append(f"  max_iter:       {self.max_iter}")
-        rows.append(f"  output_dir:     {self.output_dir}")
         rows.append("=" * 50)
 
         return "\n".join(rows)

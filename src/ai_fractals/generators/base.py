@@ -156,7 +156,9 @@ class BaseFractalGenerator(ABC):
                 continue
 
             if isinstance(v, (int, float, str, bool)):
-                val = v
+                val = str(v)
+            elif isinstance(v, torch.device):
+                val = str(v)
             else:
                 val = type(v).__name__
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 from ai_fractals.analysis import FractalQualityEvaluator
@@ -9,6 +10,8 @@ from ai_fractals.data.region_builder import RegionBuilder
 from ai_fractals.generators import create_generator
 from ai_fractals.processing import EdgeDetector
 from ai_fractals.search import create_search_strategy
+
+log = logging.getLogger(__name__)
 
 
 def run_region_batch(cfg: dict) -> None:
@@ -27,7 +30,7 @@ def run_region_batch(cfg: dict) -> None:
     # Tile-search generator (low-res)
     tile_gen = create_generator(
         fractal_type=cfg["fractal_type"],
-        colormap="twilight",  # unused for raw iteration counts
+        colormap="twilight_shifted",  # unused for raw iteration counts
         **cfg["tile_gen"],
     )
 
@@ -48,7 +51,7 @@ def run_region_batch(cfg: dict) -> None:
         save_max_depth=cfg["max_depth"],
     )
 
-    print("\n", region_builder, "\n")
+    log.info("\n" + str(region_builder) + "\n")
     region_builder.run(cfg["batch_size"])
 
-    print(f"\nRegion batch completed. Saved metadata to: {region_dir}\n")
+    log.info(f"\nRegion batch completed. Saved metadata to: {region_dir}\n")
