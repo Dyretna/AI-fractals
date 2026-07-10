@@ -41,6 +41,7 @@ ROOT = Path(os.getenv("PROJECT_ROOT"))
 sys.path.append(str(ROOT))
 
 from scripts.logging_setup import setup_logging  # noqa
+from scripts.system_specs import get_system_specs_str  # noqa
 
 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 setup_logging(redirect_path=ROOT / "logs" / f"{ts}_ss_cnn_train.log")
@@ -50,6 +51,7 @@ log = logging.getLogger(__name__)
 
 
 def main(dataset_path: Path, models_path: Path):
+    log.info(get_system_specs_str())
     log.info("Starting self-supervised CNN training script")
 
     # --- dataset loading ---

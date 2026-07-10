@@ -26,6 +26,12 @@ ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 setup_logging(redirect_path=ROOT / "logs" / f"{ts}_batch.log")
 log = logging.getLogger(__name__)
 
+# -----------------------------------------------------------------
+# log system specs
+# -----------------------------------------------------------------
+from scripts.system_specs import get_system_specs_str  # noqa
+
+log.info(get_system_specs_str())
 
 # -----------------------------------------------------------------
 # Handling paths to insert into cfg dict

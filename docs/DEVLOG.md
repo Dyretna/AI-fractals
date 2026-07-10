@@ -1,5 +1,43 @@
 # Devlog
 
+## **July 10, 2026**
+Alright, I have new globally gradient‑normalized RGB images. While watching them generate, I got a bit paranoid that some of the old regions were of poor quality — some had been generated with very low *max_iter*. For some reason I thought it might affect the RGB generation as well, but if anything it mostly affects the variety of tiles produced, since bad ones get filtered out anyway.
+
+The paranoia got to me, so I decided to replace all regions from 20260616 with new ones. That took some extra time… and I was just about to fire up the WGAN pipeline when I realized that I had to retrain the CNN and VAE as well, on the new shorelines. Ah… but okay, it’s relatively fine. Two hours tops. Then we can see the eventual improvement.
+
+Here is an example of one of the new RGB fractals:
+
+![image](doc_assets/gradient_norm_twilight_shifted.png)
+
+It has a lot of details, and I’m actually a bit worried it might get too “messy” for the GAN model — maybe generating at max_iter 2048 was too much. The issue was that I thought the border to the “inside” of the fractal looked too ugly, and I still kind of think it does. It has this dark, almost brown‑orange border that is quite wide. So what I might really need is to somehow compress the color gradient closer to the inside of the fractal, or pick another colormap. Not sure. But never mind — this is an aesthetic thing. It will be interesting to see how the GAN handles it anyway… just have to wait for the embeddings to finish.
+
+---
+
+Okay, so this did not perform as well as I expected, but maybe the normalization helped somewhat.
+
+At epoch 50:
+
+![image](doc_assets/20260710_samples_wgan_twilight_norm_gradient/samples_epoch_50.png)
+
+And maybe has gotten some more clarity at epoch 100:
+
+![image](doc_assets/20260710_samples_wgan_twilight_norm_gradient/samples_epoch_100.png)
+
+But successively after that it starts to *balla ur*, as we say in Swedish — or go off the rails:
+
+epoch 140:
+
+![image](doc_assets/20260710_samples_wgan_twilight_norm_gradient/samples_epoch_140.png)
+
+and 200:
+
+![image](doc_assets/20260710_samples_wgan_twilight_norm_gradient/samples_epoch_200.png)
+
+Also, the contrast is very poor, which I think might be because the generator feels safer being “diffused”, so it won’t be punished as hard by the critic. Not sure about that though...
+
+Anyways, I’ll keep both RGB datasets — just replace the RGBs that need to be aligned with the new embeddings — and that should keep everything consistent. I guess the next step now is to test batching with clustering.
+
+
 ## **July 9, 2026**
 I generated a new RGB batch and ran a WGAN-GP training session using the exact same parameters as before — the only difference was the dataset. This time, all fractals were rendered using the twilight_shifted colormap, and there is quite an improvement! The model learns faster, stabilizes earlier, and produces far cleaner gradients.
 

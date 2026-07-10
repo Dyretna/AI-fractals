@@ -30,8 +30,6 @@ After training:
 
 import copy
 import logging
-import os
-import platform
 from pathlib import Path
 from typing import Optional, Tuple
 
@@ -109,7 +107,6 @@ class WganGpTrainer:
 
         # logger
         self.log = logging.getLogger(__name__)
-        self._system_specs()
         self.log.info(self)
 
     def _sample_noise(self, batch_size: int) -> torch.Tensor:
@@ -180,7 +177,8 @@ class WganGpTrainer:
                 self._samples_per_epoch(epoch)
 
             if self.checkpoint_dir is not None:
-                self._checkpoint_per_epoch(epoch)
+                if (epoch + 1) % 20 == 0:
+                    self._checkpoint_per_epoch(epoch)
 
             self.log.info(
                 f"[EPOCH DONE] {epoch + 1}/{self.epochs} | "
@@ -253,26 +251,6 @@ class WganGpTrainer:
             },
             self.checkpoint_dir / f"wgan_gp_epoch_{epoch + 1}.pt",
         )
-
-    def _system_specs(self):
-        header = "\n" + "=" * 50 + "\n System Specs \n" + "=" * 50
-        rows = [header]
-
-        rows.append(f"OS: {platform.system()} {platform.release()}")
-        rows.append(f"Machine: {platform.machine()}")
-        rows.append(f"Python: {platform.python_version()}")
-        rows.append(f"CPU: {platform.processor()}")
-        rows.append(f"Cores: {os.cpu_count()}")
-        rows.append(f"PyTorch: {torch.__version__}")
-        rows.append(f"CUDA available: {torch.cuda.is_available()}")
-        if torch.cuda.is_available():
-            rows.append(f"CUDA version: {torch.version.cuda}")
-            rows.append(f"GPU: {torch.cuda.get_device_name(0)}")
-            rows.append(f"GPU capability: {torch.cuda.get_device_capability(0)}")
-            mem = torch.cuda.get_device_properties(0).total_memory // (1024**2)
-            rows.append(f"GPU memory: {mem} MB")
-        rows.append("")
-        self.log.info("\n".join(rows))
 
     def __str__(self):
         header = "\n" + "=" * 50 + f"\n{self.__class__.__name__}\n" + "=" * 50

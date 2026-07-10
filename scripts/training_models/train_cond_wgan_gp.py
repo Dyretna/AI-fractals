@@ -33,15 +33,16 @@ ROOT = Path(os.getenv("PROJECT_ROOT"))
 sys.path.append(str(ROOT))
 
 from scripts.logging_setup import setup_logging  # noqa
+from scripts.system_specs import get_system_specs_str  # noqa
 
 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 setup_logging(redirect_path=ROOT / "logs" / f"{ts}_wgan_train.log")
 log = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-
 
 def main(dataset_path: Path, embed_path: Path, models_path: Path):
+    # log system specs
+    log.info(get_system_specs_str())
     log.info("Starting conditional WGAN-GP training script")
 
     transform = T.Compose(
@@ -100,7 +101,11 @@ if __name__ == "__main__":
 
     # input
     DATASET_DIR = (
-        PROJECT_ROOT / "dataset" / "rgb" / "mandelbrot" / "twilight_res1024_iter1024"
+        PROJECT_ROOT
+        / "dataset"
+        / "rgb"
+        / "mandelbrot"
+        / "twilight_global_gradnorm_iter2048"
     )
     EMBED_PATH = PROJECT_ROOT / "models" / "cnn_embeddings.pt"
 

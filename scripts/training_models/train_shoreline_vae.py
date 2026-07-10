@@ -36,6 +36,7 @@ ROOT = Path(os.getenv("PROJECT_ROOT"))
 sys.path.append(str(ROOT))
 
 from scripts.logging_setup import setup_logging  # noqa
+from scripts.system_specs import get_system_specs_str  # noqa
 
 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 setup_logging(redirect_path=ROOT / "logs" / f"{ts}_shoreline_vae_train.log")
@@ -46,6 +47,7 @@ log = logging.getLogger(__name__)
 
 def main(region_root: Path, shoreline_root: Path, models_path: Path):
     # --- init logging ---
+    log.info(get_system_specs_str())
     log.info("Starting ShorelineVAE training script")
 
     # --- dataset loading ---
