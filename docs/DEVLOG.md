@@ -290,7 +290,7 @@ I’ve been working on this project for a while now, and today feels like a good
 
 ---
 
-### Early Days — Naive Dataset Generation
+### Starting Off — Naive Dataset Generation
 
 The project started out with finding the article that the repo builds upon,
 then using the generators i found to generate a bunch of fractals and save them.
@@ -325,7 +325,7 @@ After buildning the CNN i realized that PyTorch can do augmentation on-the-fly, 
 
 ---
 
-### The Big Refactor — Builders, Strategies, and a Cleaner Design
+### Refactor — Builders, Strategies, and a Cleaner Design
 
 After removing the augmentation step and simplifying the shoreline pipeline, I took a step back and realized that the RGB and shoreline builders were not as different as they looked. In many ways, they could follow the same overall structure, just with different steps and outputs. They are still separate for now, but a lot of work has gone into making them feel like two variations of the same pipeline rather than two unrelated systems.
 

@@ -2,7 +2,6 @@
 import argparse
 import logging
 import os
-import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -11,91 +10,17 @@ from batch_generation.batch_region_params import run_region_batch
 from batch_generation.batch_rgb_from_meta import run_rgb_batch
 from batch_generation.batch_shoreline_from_meta import run_shoreline_batch
 from dotenv import load_dotenv
-
-# ---------------------------------------------------------------------------
-# Setup environment and Logging
-# ---------------------------------------------------------------------------
+from utils import get_system_specs_str, resolve_output_paths, setup_logging
 
 load_dotenv()
 ROOT = Path(os.getenv("PROJECT_ROOT"))
-sys.path.append(str(ROOT))
-
-from scripts.logging_setup import setup_logging  # noqa
-
 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 setup_logging(redirect_path=ROOT / "logs" / f"{ts}_batch.log")
 log = logging.getLogger(__name__)
-
-# -----------------------------------------------------------------
-# log system specs
-# -----------------------------------------------------------------
-from scripts.system_specs import get_system_specs_str  # noqa
-
 log.info(get_system_specs_str())
 
-# -----------------------------------------------------------------
-# Handling paths to insert into cfg dict
-# -----------------------------------------------------------------
-
-
-def resolve_output_paths(cfg: dict, project_root: Path):
-    job_type = cfg.get("job_type", None)
-
-    if job_type == "region":
-        # region builder has ONE output-dir
-        if "output_dir" not in cfg:
-            raise ValueError("Config missing 'output_dir'.")
-        cfg["output_path"] = (project_root / cfg["output_dir"]).resolve()
-        return cfg
-
-    elif job_type == "shoreline":
-        # shoreline has FIVE paths
-        required = [
-            "region_raw_dir",
-            "region_evaluated_dir",
-            "region_rejected_dir",
-            "shoreline_evaluated_dir",
-            "shoreline_rejected_dir",
-        ]
-        for key in required:
-            if key not in cfg:
-                raise ValueError(f"Config missing '{key}'.")
-
-        cfg["region_raw_dir"] = Path(project_root / cfg["region_raw_dir"]).resolve()
-        cfg["region_evaluated_dir"] = Path(
-            project_root / cfg["region_evaluated_dir"]
-        ).resolve()
-        cfg["region_rejected_dir"] = Path(
-            project_root / cfg["region_rejected_dir"]
-        ).resolve()
-        cfg["shoreline_evaluated_dir"] = Path(
-            project_root / cfg["shoreline_evaluated_dir"]
-        ).resolve()
-        cfg["shoreline_rejected_dir"] = Path(
-            project_root / cfg["shoreline_rejected_dir"]
-        ).resolve()
-        return cfg
-
-    elif job_type == "rgb":
-        if "output_dir" not in cfg:
-            raise ValueError("Config missing 'output_dir'.")
-
-        cfg["region_evaluated_dir"] = Path(
-            project_root / cfg["region_evaluated_dir"]
-        ).resolve()
-        cfg["output_dir"] = (project_root / cfg["output_dir"]).resolve()
-        return cfg
-    else:
-        raise ValueError(f"Unknown job_type: {job_type}")
-
 
 # -----------------------------------------------------------------
-
-
-def load_config(path: str) -> dict:
-    """Load YAML config file."""
-    with open(path, "r") as f:
-        return yaml.safe_load(f)
 
 
 def main():

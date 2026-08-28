@@ -15,7 +15,6 @@ Conditioning note:
 
 import logging
 import os
-import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -27,22 +26,13 @@ from ai_fractals.data import ShorelineWithBoundsDataset
 from ai_fractals.models import ShorelineVAE
 from ai_fractals.training import VAETrainer
 
-# ---------------------------------------------------------------------------
-# Setup environment and Logging
-# ---------------------------------------------------------------------------
+from ..utils import get_system_specs_str, setup_logging
 
 load_dotenv()
 ROOT = Path(os.getenv("PROJECT_ROOT"))
-sys.path.append(str(ROOT))
-
-from scripts.logging_setup import setup_logging  # noqa
-from scripts.system_specs import get_system_specs_str  # noqa
-
 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 setup_logging(redirect_path=ROOT / "logs" / f"{ts}_shoreline_vae_train.log")
 log = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
 
 
 def main(region_root: Path, shoreline_root: Path, models_path: Path):

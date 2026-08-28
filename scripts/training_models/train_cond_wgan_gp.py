@@ -1,5 +1,5 @@
 """
-scripts/train_wgan_gp_conditional.py
+scripts/train_cond_wgan_gp.py
 
 Main script for training a conditional WGAN-GP on RGB fractal images.
 
@@ -12,7 +12,6 @@ The trainer handles:
 
 import logging
 import os
-import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -23,21 +22,15 @@ from torch.utils.data import DataLoader
 from ai_fractals.data import RGBWithEmbeddingDataset
 from ai_fractals.models import WganGpCritic, WganGpGenerator
 from ai_fractals.training import WganGpTrainer
-
-# ---------------------------------------------------------------------------
-# Setup environment and Logging
-# ---------------------------------------------------------------------------
+from scripts.utils import get_system_specs_str, setup_logging
 
 load_dotenv()
 ROOT = Path(os.getenv("PROJECT_ROOT"))
-sys.path.append(str(ROOT))
-
-from scripts.logging_setup import setup_logging  # noqa
-from scripts.system_specs import get_system_specs_str  # noqa
-
 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 setup_logging(redirect_path=ROOT / "logs" / f"{ts}_wgan_train.log")
 log = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
 
 
 def main(dataset_path: Path, embed_path: Path, models_path: Path):

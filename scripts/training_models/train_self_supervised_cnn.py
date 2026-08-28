@@ -19,7 +19,6 @@ Augmentation note:
 
 import logging
 import os
-import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -32,17 +31,10 @@ from ai_fractals.data import ShorelineDataset
 from ai_fractals.models import SelfSupervisedCNN
 from ai_fractals.training import SelfSupervisedTrainer
 
-# ---------------------------------------------------------------------------
-# Setup environment and Logging
-# ---------------------------------------------------------------------------
+from ..utils import get_system_specs_str, setup_logging
 
 load_dotenv()
 ROOT = Path(os.getenv("PROJECT_ROOT"))
-sys.path.append(str(ROOT))
-
-from scripts.logging_setup import setup_logging  # noqa
-from scripts.system_specs import get_system_specs_str  # noqa
-
 ts = datetime.now().strftime("%Y%m%d_%H%M%S")
 setup_logging(redirect_path=ROOT / "logs" / f"{ts}_ss_cnn_train.log")
 log = logging.getLogger(__name__)
